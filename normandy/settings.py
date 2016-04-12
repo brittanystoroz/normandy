@@ -24,6 +24,7 @@ class Core(Configuration):
         'reversion',
         'storages',
         'raven.contrib.django.raven_compat',
+        'webpack_loader',
 
         'django.contrib.admin.apps.SimpleAdminConfig',
         'django.contrib.auth',
@@ -144,6 +145,11 @@ class Core(Configuration):
         'UGLIFYJS_BINARY': os.path.join(BASE_DIR, 'node_modules/.bin/uglifyjs'),
     }
 
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'js/bundles/', # must end with slash
+    }
+}
 
 
 class Base(Core):
