@@ -127,15 +127,6 @@ class Core(Configuration):
                 'output_filename': 'control/css/control-min.css',
             },
         },
-        'JAVASCRIPT': {
-            'control': {
-                'source_filenames': (
-                    'npm/jquery/dist/jquery.min.js',
-                    'control/js/main.js',
-                ),
-                'output_filename': 'control/js/control.js'
-            },
-        },
         'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
         'CSSMIN_BINARY': os.path.join(BASE_DIR, 'node_modules/.bin/cssmin'),
 
