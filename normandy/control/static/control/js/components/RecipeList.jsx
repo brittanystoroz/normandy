@@ -5,7 +5,7 @@ import Link from 'react-router'
 import ControlActions from '../actions/ControlActions.js'
 import Dispatcher from '../utils/Dispatcher.js';
 
-class RecipeTableData extends React.Component {
+class RecipeDataRow extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -14,7 +14,7 @@ class RecipeTableData extends React.Component {
     let recipe = this.props.recipe;
 
     return (
-      <tr key={recipe.id}>
+      <tr key={recipe.id} onClick={(e) => { this.props.editRecipe(e, recipe.id)}}>
         <td>{recipe.name}</td>
         <td>{recipe.action.name}</td>
         <td>
@@ -54,7 +54,7 @@ export default class RecipeList extends React.Component {
           <tbody>
             {
               this.props.recipes.map(recipe => {
-                return (<RecipeTableData recipe={recipe} key={recipe.id} />)
+                return (<RecipeDataRow editRecipe={this.props.editRecipe} recipe={recipe} key={recipe.id} />)
               })
             }
           </tbody>

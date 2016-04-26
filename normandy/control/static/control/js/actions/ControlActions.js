@@ -14,7 +14,19 @@ export function fetchAllRecipes() {
   });
 }
 
+export function fetchSingleRecipe(recipeId) {
+  apiFetch(`/api/v1/recipe/${recipeId}/`, {
+    credentials: 'include',
+  }).then(recipe => {
+    Dispatcher.dispatch({
+      type: actionTypes.SELECTED_RECIPE_LOADED,
+      recipe,
+    });
+  });
+}
+
 
 export default {
   fetchAllRecipes,
+  fetchSingleRecipe,
 };

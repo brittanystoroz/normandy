@@ -21,6 +21,7 @@ export default class ControlApp extends React.Component {
 
   getStateFromStores() {
     return {
+      'selectedRecipe': ControlStore.getSelectedRecipe(),
       'recipes': ControlStore.getRecipes(),
     }
   }
@@ -29,11 +30,32 @@ export default class ControlApp extends React.Component {
     this.setState(this.getStateFromStores());
   }
 
+  editRecipe(e, recipeId) {
+    ControlActions.fetchSingleRecipe(recipeId);
+    this.context.router.push(`/control/recipe/${recipeId}/`);
+  }
+
+  getChildProps(childType) {
+    switch(childType) {
+      case 'RecipeForm':
+        return { recipe: this.state.selectedRecipe };
+      case 'RecipeList':
+        return { recipes: this.state.recipes, editRecipe: this.editRecipe.bind(this) };
+      default:
+        throw new Error('No components to load :(');
+    }
+  }
+
   render() {
     return (
       <div className="fluid-8">
-        <RecipeList recipes={this.state.recipes} />
+        {React.Children.map(this.props.children,
+          (child) => React.cloneElement(child, this.getChildProps(child.type.name)))}
       </div>
     )
   }
+}
+
+ControlApp.contextTypes = {
+  router: React.PropTypes.object
 }
