@@ -32,8 +32,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'revision_id',
+            'enabled',
             'action',
             'arguments',
+            'sample_rate',
+            'release_channels',
         ]
 
 
