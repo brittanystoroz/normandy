@@ -6,8 +6,14 @@ import { setSelectedRecipe, fetchAllRecipes } from '../actions/ControlActions.js
 
 const loggerMiddleware = createLogger()
 
+let initialState = {
+  'recipes': [],
+  'selectedRecipe': null
+}
+
 let controlStore = createStore(
   controlApp,
+  initialState,
   applyMiddleware(
     thunk,
     loggerMiddleware

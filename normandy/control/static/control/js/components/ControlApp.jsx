@@ -36,8 +36,8 @@ class ControlApp extends React.Component {
   }
 
   editRecipe(e, recipeId) {
-    // ControlActions.fetchSingleRecipe(recipeId);
-    // this.context.router.push(`/control/recipe/${recipeId}/`);
+    ControlActions.fetchSingleRecipe(recipeId);
+    this.context.router.push(`/control/recipe/${recipeId}/`);
   }
 
   deleteRecipe(e, recipeId) {
@@ -62,7 +62,8 @@ class ControlApp extends React.Component {
   render() {
     return (
       <div className="fluid-8">
-        <RecipeListContainer />
+        {React.Children.map(this.props.children,
+          (child) => React.cloneElement(child, this.getChildProps(child.type.WrappedComponent.name)))}
       </div>
     )
   }
