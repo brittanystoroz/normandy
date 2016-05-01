@@ -9,8 +9,6 @@ const getVisibleRecipes = (recipes, filter) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  console.log("Mapping state to props: ", state.recipes);
-  console.log("OWN PROPS: ", ownProps);
   return {
     recipes: getVisibleRecipes(state.recipes)
   }
@@ -46,7 +44,6 @@ class RecipeDataRow extends React.Component {
 
 class RecipeList extends React.Component {
   constructor(props) {
-    console.log("PROPS: ", props);
     super(props);
   }
 
@@ -57,7 +54,6 @@ class RecipeList extends React.Component {
   }
 
   render() {
-    console.log("This RECIPE LIST: ", this);
     return (
       <div className="fluid-8">
         <table id="recipe-list">

@@ -81,6 +81,11 @@ class Core(Configuration):
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
         'npm.finders.NpmFinder',
     ]
+
+    STATICFILES_DIRS = (
+        os.path.join(BASE_DIR, 'assets'),
+    )
+
     NPM_DESTINATION_PREFIX = 'npm'
     NPM_FILE_PATTERNS = {
         'babel-polyfill': ['dist/*.js'],
@@ -110,11 +115,6 @@ class Core(Configuration):
             'TIMEOUT': values.IntegerValue(300, environ_name='CACHES_RECIPES_TIMEOUT'),
         },
     }
-
-    STATICFILES_DIRS = (
-        os.path.join(BASE_DIR, 'assets'), # We do this so that django's collectstatic copies or our bundles to the STATIC_ROOT or syncs them to whatever storage we use.
-    )
-
 
     WEBPACK_LOADER = {
         'DEFAULT': {

@@ -1,12 +1,7 @@
-import { REQUEST_RECIPES, RECIPES_LOADED, ADD_RECIPE, REQUEST_SINGLE_RECIPE, SINGLE_RECIPE_LOADED, SET_SELECTED_RECIPE } from '../constants/ControlConstants.js';
+import { REQUEST_RECIPES, RECIPES_LOADED, ADD_RECIPE, REQUEST_SINGLE_RECIPE, SET_SELECTED_RECIPE } from '../constants/ControlConstants.js';
 import apiFetch from '../utils/apiFetch.js';
 
-export function routeLocationDidUpdate(location) {
-  return {
-    type: 'LOCATION_CHANGE',
-    location: location
-  }
-}
+
 export function setSelectedRecipe(recipe) {
   return {
     type: SET_SELECTED_RECIPE,
@@ -28,7 +23,6 @@ function requestRecipes() {
 }
 
 function requestSingleRecipe() {
-  console.log('requesting single recipe');
   return {
     type: REQUEST_SINGLE_RECIPE,
   }
@@ -54,7 +48,6 @@ export function fetchAllRecipes() {
 }
 
 export function fetchSingleRecipe(recipeId) {
-  console.log('fetching single recipe: ', recipeId);
   return dispatch => {
     dispatch(setSelectedRecipe({
       id: recipeId
@@ -63,15 +56,21 @@ export function fetchSingleRecipe(recipeId) {
     return apiFetch(`/api/v1/recipe/${recipeId}/`, {
       credentials: 'include',
     }).then(recipe => {
-      console.log("fetched!");
       dispatch(setSelectedRecipe(recipe));
     });
   }
 }
 
-export function deleteRecipe(recipeId) {
-  console.log('deleting recipe: ', recipeId);
+export function deleteRecipe(recipe) {
+  return apiFetch(`/api/v1/recipe/${recipe.id}/`, {
+      method: 'delete'
+    }).then(recipe => {
+      dispatch(setSelectedRecipe(null));
+    });
+}
 
+export function updateRecipe(recipe) {
+  console.log('updating recipe from control actions!');
 }
 
 
@@ -80,5 +79,5 @@ export default {
   fetchSingleRecipe,
   deleteRecipe,
   setSelectedRecipe,
-  routeLocationDidUpdate,
+  updateRecipe,
 };

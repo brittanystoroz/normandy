@@ -34,7 +34,7 @@ class CreateView(ControlMixin, generic.CreateView):
   success_url = reverse_lazy('control:index')
 
 
-class DeleteView(ControlMixin, generic.DeleteView):
-  model = Recipe
-  success_url = reverse_lazy('control:index')
-  template_name = 'control/delete_recipe.html'
+# class DeleteView(ControlMixin, generic.DeleteView):
+#   model = Recipe
+#   success_url = reverse_lazy('control:index')
+#   template_name = 'control/delete_recipe.html'

@@ -6,47 +6,43 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = {
   context: __dirname,
 
-  entry: ['./normandy/control/static/control/js/index.js', './normandy/control/static/control/admin/sass/control.scss'], // entry point of our app. assets/js/index.js should require other js modules and dependencies it needs
+  entry: {
+    selfrepair: './normandy/selfrepair/static/js/self_repair_runner',
+    control: [
+      './normandy/control/static/control/js/index',
+      './normandy/control/static/control/admin/sass/control.scss'
+    ]
+  },
 
   output: {
       path: path.resolve('./assets/bundles/'),
-      filename: "control-[hash].js",
+      filename: '[name]-[hash].js',
+      chunkFilename: '[id].bundle.js'
   },
 
   plugins: [
-    new BundleTracker({filename: './webpack-stats.json'}),
-    new ExtractTextPlugin("[name].css"),
-    new webpack.ProvidePlugin({
-      $: "jquery",
-      jQuery: "jquery",
-      "window.jQuery": "jquery"
-    })
+    new BundleTracker({ filename: './webpack-stats.json' }),
+    new ExtractTextPlugin('[name]-[hash].css'),
   ],
 
   module: {
     loaders: [
-      { test: /(\.|\/)(jsx|js)$/, loader: 'babel',
+      {
+        test: /(\.|\/)(jsx|js)$/,
+        exclude: /node_modules/,
+        loader: 'babel',
         'query': {
-          presets: ['es2015', 'react'],
-          plugins: ['transform-es2015-destructuring']
+          presets: ['es2015', 'react']
         }
       },
-      { test: /\.scss$/,
-        loaders: ['style','css','sass']
+      {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss!sass?sourceMap')
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
         loader: 'file-loader'
       }
     ],
-  },
-
-  resolve: {
-    modulesDirectories: ['node_modules', 'bower_components'],
-    extensions: ['', '.js', '.jsx'],
-    alias: {
-      react: path.resolve('./node_modules/react'),
-      $: path.resolve('./node_modules/jquery/dist'),
-    },
-  },
+  }
 }
