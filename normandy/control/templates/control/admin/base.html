@@ -1,4 +1,4 @@
-{% load i18n pipeline %}
+{% load i18n %}
 {% load render_bundle from webpack_loader %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -6,7 +6,7 @@
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
   <head>
     <title>SHIELD Control Panel</title>
-    {% stylesheet 'control' %}
+    {% render_bundle 'main' 'css' %}
     <meta name="robots" content="NONE,NOARCHIVE" />
   </head>
 
@@ -36,6 +36,6 @@
     </div>
     <!-- END Container -->
 
-    {% render_bundle 'main' %}
+    {% render_bundle 'main' 'js' %}
   </body>
 </html>
