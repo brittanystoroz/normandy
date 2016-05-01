@@ -1,38 +1,26 @@
-import BaseStore from './BaseStore.js';
-import Dispatcher from '../utils/Dispatcher.js';
-import {actionTypes} from '../constants/ControlConstants.js';
+import { createStore, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk'
+import createLogger from 'redux-logger'
+import controlApp from '../reducers/ControlReducers.js'
+import { setSelectedRecipe, fetchAllRecipes } from '../actions/ControlActions.js'
 
-let selectedRecipe = null;
-let recipes = [];
+const loggerMiddleware = createLogger()
 
-class _ControlStore extends BaseStore {
-  getSelectedRecipe() {
-    return Object.assign({}, selectedRecipe);
-  }
+let controlStore = createStore(
+  controlApp,
+  applyMiddleware(
+    thunk,
+    loggerMiddleware
+  )
+);
 
-  getRecipes() {
-    return recipes.slice(0);
-  }
-}
+console.log('Store State: ', controlStore.getState());
 
-// Stores are singletons.
-const ControlStore = new _ControlStore();
+let unsubscribe = controlStore.subscribe(() =>
+  console.log('State changed: ', controlStore.getState())
+)
 
-ControlStore.dispatchToken = Dispatcher.register((action) => {
-  switch (action.type) {
-    case actionTypes.RECIPES_LOADED:
-      recipes = action.recipes;
-      ControlStore.emitChange();
-      break;
 
-    case actionTypes.SELECTED_RECIPE_LOADED:
-      selectedRecipe = action.recipe;
-      ControlStore.emitChange();
-      break;
+// controlStore.dispatch(fetchAllRecipes())
 
-    default:
-      // do nothing
-  }
-});
-
-export default ControlStore;
+unsubscribe();

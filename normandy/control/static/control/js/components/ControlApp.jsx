@@ -1,18 +1,23 @@
 import React from 'react'
+
+import { connect } from 'react-redux'
 import ControlActions from '../actions/ControlActions.js'
 import ControlStore from '../stores/ControlStore.js'
-import RecipeList from './RecipeList.jsx'
+import RecipeListContainer from './containers/RecipeListContainer.js'
 
-export default class ControlApp extends React.Component {
-  constructor() {
-    super();
-    this.state = this.getStateFromStores();
+class ControlApp extends React.Component {
+  constructor(props) {
+    super(props);
+    // this.state = this.getStateFromStores();
     this.onChange = this.onChange.bind(this);
   }
 
   componentDidMount() {
-    ControlStore.addChangeListener(this.onChange);
-    ControlActions.fetchAllRecipes();
+    // ControlStore.addChangeListener(this.onChange);
+    // ControlActions.fetchAllRecipes();
+    const { dispatch } = this.props
+    dispatch(ControlActions.fetchAllRecipes());
+
   }
 
   componentWillUnmount() {
@@ -20,19 +25,19 @@ export default class ControlApp extends React.Component {
   }
 
   getStateFromStores() {
-    return {
-      'selectedRecipe': ControlStore.getSelectedRecipe(),
-      'recipes': ControlStore.getRecipes(),
-    }
+    // return {
+    //   'selectedRecipe': ControlStore.getSelectedRecipe(),
+    //   'recipes': ControlStore.getRecipes(),
+    // }
   }
 
   onChange() {
-    this.setState(this.getStateFromStores());
+    // this.setState(this.getStateFromStores());
   }
 
   editRecipe(e, recipeId) {
-    ControlActions.fetchSingleRecipe(recipeId);
-    this.context.router.push(`/control/recipe/${recipeId}/`);
+    // ControlActions.fetchSingleRecipe(recipeId);
+    // this.context.router.push(`/control/recipe/${recipeId}/`);
   }
 
   getChildProps(childType) {
@@ -49,8 +54,7 @@ export default class ControlApp extends React.Component {
   render() {
     return (
       <div className="fluid-8">
-        {React.Children.map(this.props.children,
-          (child) => React.cloneElement(child, this.getChildProps(child.type.name)))}
+        <RecipeListContainer />
       </div>
     )
   }
@@ -59,3 +63,13 @@ export default class ControlApp extends React.Component {
 ControlApp.contextTypes = {
   router: React.PropTypes.object
 }
+
+let mapStateToProps = (state) => {
+  const { selectedRecipe, recipes } = state
+  return {
+    selectedRecipe,
+    recipes
+  }
+}
+
+export default connect(mapStateToProps)(ControlApp)

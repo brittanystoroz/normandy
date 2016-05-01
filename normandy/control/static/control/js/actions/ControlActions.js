@@ -1,17 +1,43 @@
-import Dispatcher from '../utils/Dispatcher.js';
-import {actionTypes} from '../constants/ControlConstants.js';
+import { REQUEST_RECIPES, RECIPES_LOADED, ADD_RECIPE, SET_SELECTED_RECIPE } from '../constants/ControlConstants.js';
 import apiFetch from '../utils/apiFetch.js';
 
+export function setSelectedRecipe(recipeId) {
+  return {
+    type: SET_SELECTED_RECIPE,
+    recipeId: recipeId
+  }
+}
+
+export function addRecipe(recipe) {
+  return {
+    type: ADD_RECIPE,
+    recipe
+  }
+}
+
+function requestRecipes() {
+  return {
+    type: REQUEST_RECIPES,
+  }
+}
+
+function recipesLoaded(recipes) {
+  return {
+    type: RECIPES_LOADED,
+    recipes: recipes,
+  }
+}
 
 export function fetchAllRecipes() {
-  apiFetch('/api/v1/recipe/', {
-    credentials: 'include',
-  }).then(recipes => {
-    Dispatcher.dispatch({
-      type: actionTypes.RECIPES_LOADED,
-      recipes,
+  return dispatch => {
+    dispatch(requestRecipes());
+
+    return apiFetch('/api/v1/recipe/', {
+      credentials: 'include',
+    }).then(recipes => {
+      dispatch(recipesLoaded(recipes));
     });
-  });
+  }
 }
 
 export function fetchSingleRecipe(recipeId) {
@@ -19,7 +45,7 @@ export function fetchSingleRecipe(recipeId) {
     credentials: 'include',
   }).then(recipe => {
     Dispatcher.dispatch({
-      type: actionTypes.SELECTED_RECIPE_LOADED,
+      type: SELECTED_RECIPE_LOADED,
       recipe,
     });
   });

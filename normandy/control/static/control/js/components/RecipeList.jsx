@@ -35,10 +35,12 @@ class RecipeDataRow extends React.Component {
 
 export default class RecipeList extends React.Component {
   constructor(props) {
+    console.log("PROPS: ", props);
     super(props);
   }
 
   render() {
+    console.log("This RECIPE LIST: ", this);
     return (
       <div className="fluid-8">
         <table id="recipe-list">
