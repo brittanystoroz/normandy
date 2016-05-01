@@ -1,6 +1,18 @@
 import React from 'react'
+import { connect } from 'react-redux'
 
-export default class DeleteRecipe extends React.Component {
+import ControlActions from '../actions/ControlActions.js'
+
+
+const mapStateToProps = (state) => {
+  console.log("Mapping state to props: ", state.selectedRecipe);
+  return {
+    selectedRecipe: state.selectedRecipe
+  }
+}
+
+
+class DeleteRecipe extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -9,8 +21,7 @@ export default class DeleteRecipe extends React.Component {
     return (
       <div className="fluid-7">
         <form action="" method="post" className="crud-form">
-          {% csrf_token %}
-          <p>Are you sure you want to delete "{this.props.recipe.name}"?</p>
+          <p>Are you sure you want to delete "{this.props.selectedRecipe.name}"?</p>
           <div className="form-action-buttons">
             <div className="fluid-2 float-right">
               <input type="submit" value="Confirm" class="delete" />
@@ -21,3 +32,13 @@ export default class DeleteRecipe extends React.Component {
     )
   }
 }
+
+DeleteRecipe.propTypes = {
+  selectedRecipe: React.PropTypes.object,
+}
+
+
+export default connect(
+  mapStateToProps
+)(DeleteRecipe)
+

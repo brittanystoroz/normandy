@@ -1,20 +1,33 @@
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, combineReducers } from 'redux'
 import thunk from 'redux-thunk'
 import createLogger from 'redux-logger'
-import controlApp from '../reducers/ControlReducers.js'
+import * as reducers from '../reducers/ControlReducers.js'
 import { setSelectedRecipe, fetchAllRecipes } from '../actions/ControlActions.js'
 
-const loggerMiddleware = createLogger()
+
+import { Router, Route, browserHistory } from 'react-router';
+import { routerReducer, routerMiddleware } from 'react-router-redux'
+
+const loggerMiddleware = createLogger();
+const reduxRouterMiddleware = routerMiddleware(browserHistory)
 
 let initialState = {
   'recipes': [],
   'selectedRecipe': null
 }
 
+console.log('reducers: ', reducers);
+
 let controlStore = createStore(
-  controlApp,
+  combineReducers({
+    recipes: reducers.recipes,
+    selectedRecipe: reducers.selectedRecipe,
+    header: reducers.header,
+    routing: routerReducer
+  }),
   initialState,
   applyMiddleware(
+    reduxRouterMiddleware,
     thunk,
     loggerMiddleware
   )
@@ -23,10 +36,12 @@ let controlStore = createStore(
 console.log('Store State: ', controlStore.getState());
 
 let unsubscribe = controlStore.subscribe(() =>
-  console.log('State changed: ', controlStore.getState())
+  console.log('STATE CHANGED: ', controlStore.getState())
 )
 
 
 // controlStore.dispatch(fetchAllRecipes())
 
-unsubscribe();
+// unsubscribe();
+
+export default controlStore;

@@ -1,10 +1,5 @@
 {% extends "control/admin/base.html" %}
 
-{% block page-header %}
-  <h2><a href="{% url 'control:index' %}">Recipes:</a> <span>{{ recipe.name }}</span></h2>
-  <div class="button"><i class="fa fa-history pre"></i> History</div>
-{% endblock %}
-
 {% block content %}
   <div id="secondary-header" class="fluid-8">
     <h3><i class="fa fa-edit"></i> Edit Recipe</h3>

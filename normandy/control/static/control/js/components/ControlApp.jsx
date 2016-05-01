@@ -3,7 +3,9 @@ import React from 'react'
 import { connect } from 'react-redux'
 import ControlActions from '../actions/ControlActions.js'
 import ControlStore from '../stores/ControlStore.js'
-import RecipeListContainer from './containers/RecipeListContainer.js'
+import Header from './Header.jsx'
+
+import { push } from 'react-router-redux'
 
 class ControlApp extends React.Component {
   constructor(props) {
@@ -15,13 +17,13 @@ class ControlApp extends React.Component {
   componentDidMount() {
     // ControlStore.addChangeListener(this.onChange);
     // ControlActions.fetchAllRecipes();
-    const { dispatch } = this.props
-    dispatch(ControlActions.fetchAllRecipes());
+
+    // const { dispatch } = this.props;
 
   }
 
   componentWillUnmount() {
-    ControlStore.removeChangeListener(this.onChage);
+    ControlStore.removeChangeListener(this.onChange);
   }
 
   getStateFromStores() {
@@ -36,24 +38,29 @@ class ControlApp extends React.Component {
   }
 
   editRecipe(e, recipeId) {
-    ControlActions.fetchSingleRecipe(recipeId);
-    this.context.router.push(`/control/recipe/${recipeId}/`);
+    console.log('editing recipe!');
+    const { dispatch } = this.props;
+    dispatch(ControlActions.setSelectedRecipe({
+      id: recipeId
+    }));
+    dispatch(push(`/control/recipe/${recipeId}/`));
   }
 
   deleteRecipe(e, recipeId) {
     e.preventDefault();
     ControlActions.deleteRecipe(recipeId);
+    ControlStore.dispatch(push(`/control/recipe/${recipeId}/delete`));
   }
 
   getChildProps(childType) {
     console.log('Child Type: ', childType);
     switch(childType) {
       case 'RecipeForm':
-        return { recipe: this.state.selectedRecipe, deleteRecipe: this.deleteRecipe.bind(this) };
+        return { deleteRecipe: this.deleteRecipe.bind(this) };
       case 'RecipeList':
-        return { recipes: this.state.recipes, editRecipe: this.editRecipe.bind(this) };
+        return { editRecipe: this.editRecipe.bind(this) };
       case 'DeleteRecipe':
-        return { recipe: this.state.selectedRecipe };
+        return {};
       default:
         throw new Error('No components to load :(');
     }
@@ -62,6 +69,7 @@ class ControlApp extends React.Component {
   render() {
     return (
       <div className="fluid-8">
+        <Header route={this.props.route} />
         {React.Children.map(this.props.children,
           (child) => React.cloneElement(child, this.getChildProps(child.type.WrappedComponent.name)))}
       </div>
@@ -73,12 +81,14 @@ ControlApp.contextTypes = {
   router: React.PropTypes.object
 }
 
-let mapStateToProps = (state) => {
+let mapStateToProps = (state, ownProps) => {
   const { selectedRecipe, recipes } = state
   return {
     selectedRecipe,
-    recipes
+    recipes,
+    route: ownProps.route
   }
+  console.log("Mapping with OWNPROPS: ", ownProps.route);
 }
 
 export default connect(mapStateToProps)(ControlApp)

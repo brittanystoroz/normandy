@@ -1,9 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Link from 'react-router'
-
+import { connect } from 'react-redux'
 import ControlActions from '../actions/ControlActions.js'
-import Dispatcher from '../utils/Dispatcher.js';
+
+const getVisibleRecipes = (recipes, filter) => {
+  return recipes;
+}
+
+const mapStateToProps = (state, ownProps) => {
+  console.log("Mapping state to props: ", state.recipes);
+  console.log("OWN PROPS: ", ownProps);
+  return {
+    recipes: getVisibleRecipes(state.recipes)
+  }
+}
 
 class RecipeDataRow extends React.Component {
   constructor(props) {
@@ -33,10 +44,16 @@ class RecipeDataRow extends React.Component {
 }
 
 
-export default class RecipeList extends React.Component {
+class RecipeList extends React.Component {
   constructor(props) {
     console.log("PROPS: ", props);
     super(props);
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props
+    dispatch(ControlActions.fetchAllRecipes());
+    dispatch(ControlActions.setSelectedRecipe(null));
   }
 
   render() {
@@ -65,3 +82,7 @@ export default class RecipeList extends React.Component {
     )
   }
 }
+
+export default connect(
+  mapStateToProps
+)(RecipeList)
