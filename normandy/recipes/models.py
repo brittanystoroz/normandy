@@ -353,7 +353,7 @@ class Bundle(object):
         """
         recipes = (
             recipe for recipe in enabled_recipes()
-            if recipe.matches(client, exclude=exclude)
+            # if recipe.matches(client, exclude=exclude)
         )
 
         return cls(recipes=recipes, country=client.country)

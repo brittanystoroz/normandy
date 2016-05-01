@@ -40,12 +40,20 @@ class ControlApp extends React.Component {
     // this.context.router.push(`/control/recipe/${recipeId}/`);
   }
 
+  deleteRecipe(e, recipeId) {
+    e.preventDefault();
+    ControlActions.deleteRecipe(recipeId);
+  }
+
   getChildProps(childType) {
+    console.log('Child Type: ', childType);
     switch(childType) {
       case 'RecipeForm':
-        return { recipe: this.state.selectedRecipe };
+        return { recipe: this.state.selectedRecipe, deleteRecipe: this.deleteRecipe.bind(this) };
       case 'RecipeList':
         return { recipes: this.state.recipes, editRecipe: this.editRecipe.bind(this) };
+      case 'DeleteRecipe':
+        return { recipe: this.state.selectedRecipe };
       default:
         throw new Error('No components to load :(');
     }

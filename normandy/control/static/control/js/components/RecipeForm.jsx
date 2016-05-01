@@ -6,10 +6,14 @@ export default class RecipeForm extends React.Component {
   }
 
   render() {
+    let recipe = this.props.recipe;
     return (
-      <form>
-        <input type="text" defaultValue={this.props.recipe.name} name="name" />
-      </form>
+      <div className="fluid-7">
+        <form>
+          <input type="text" defaultValue={recipe.name} name="name" />
+        </form>
+        <a onClick={(e) => { this.props.deleteRecipe(e, recipe.id)}} classNames="button delete">Delete</a>
+      </div>
     )
   }
 }

@@ -51,8 +51,14 @@ export function fetchSingleRecipe(recipeId) {
   });
 }
 
+export function deleteRecipe(recipeId) {
+  console.log('deleting recipe: ', recipeId);
+
+}
+
 
 export default {
   fetchAllRecipes,
   fetchSingleRecipe,
+  deleteRecipe,
 };
