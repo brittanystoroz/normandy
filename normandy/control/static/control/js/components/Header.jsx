@@ -26,7 +26,7 @@ class Header extends React.Component {
     }
     return (
       <div id="page-header">
-        <h2><a href="#">{this.props.pageTitle}</a> <span>{this.props.subTitle}</span></h2>
+        <h2><Link to={`/control/`}>{this.props.pageTitle}</Link> <span>{this.props.subTitle}</span></h2>
         {ctaBtn}
       </div>
     )
