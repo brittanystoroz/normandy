@@ -16,10 +16,11 @@ class ControlApp extends React.Component {
   }
 
   getChildProps(childType) {
-    switch(childType.type.WrappedComponent.name) {
+    let componentName = (childType.name === 'Connect') ? childType.WrappedComponent.name : childType.name;
+    switch(componentName) {
       case 'RecipeList':
         return { editRecipe: this.editRecipe.bind(this) };
-      case 'RecipeForm':
+      case 'RecipeFormContainer':
         return {};
       case 'DeleteRecipe':
         return { deleteRecipe: this.deleteRecipe.bind(this) };
@@ -30,7 +31,6 @@ class ControlApp extends React.Component {
 
   editRecipe(e, recipeId) {
     const { dispatch } = this.props;
-    dispatch(ControlActions.selectRecipe(recipeId));
     dispatch(push(`/control/recipe/${recipeId}/`));
   }
 
@@ -41,7 +41,7 @@ class ControlApp extends React.Component {
         <div id="content" className="wrapper">
             <div className="fluid-8">
               {React.Children.map(this.props.children,
-              (child) => React.cloneElement(child, this.getChildProps(child)))}
+              (child) => React.cloneElement(child, this.getChildProps(child.type)))}
             </div>
         </div>
       </div>

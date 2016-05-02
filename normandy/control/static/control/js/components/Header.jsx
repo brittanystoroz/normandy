@@ -9,7 +9,7 @@ class CtaBtn extends React.Component {
 
   render() {
     return (
-      <Link className="button" to={`/control/recipe/new`}><i className={"pre fa fa-" + this.props.icon}></i> {this.props.buttonText}</Link>
+      <Link className="button" to={`/control/recipe/new/`}><i className={"pre fa fa-" + this.props.icon}></i> {this.props.buttonText}</Link>
     )
   }
 }
