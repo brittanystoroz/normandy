@@ -11,6 +11,7 @@ module.exports = function(config) {
         // list of files / patterns to load in the browser
         files: [
             'normandy/control/tests/*.js',
+            { pattern: 'normandy/control/tests/mock/*.json', watched: true, served: true, included: true },
         ],
 
         // list of files to exclude
@@ -41,6 +42,10 @@ module.exports = function(config) {
             devtool: 'inline-source-map',
         },
 
+        webpackServer: {
+          quiet: true // Suppress all webpack messages, except errors
+        },
+
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
@@ -48,6 +53,11 @@ module.exports = function(config) {
 
         // web server port
         port: 9876,
+
+        // proxies
+        proxies: {
+          '/api/v1/recipe/?format=json&': '/base/normandy/control/tests/mock/recipes.json'
+        },
 
         // enable / disable colors in the output (reporters and logs)
         colors: true,
