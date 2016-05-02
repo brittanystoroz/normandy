@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { Link } from 'react-router'
 import ControlActions from '../actions/ControlAppActions.js'
 
 class RecipeForm extends React.Component {
@@ -17,7 +18,10 @@ class RecipeForm extends React.Component {
     let recipe = this.props.recipe;
     if (recipe) {
       return (
-        <div className="fluid-8">{this.props.recipe.name}</div>
+        <div>
+          <div className="fluid-8">{recipe.name}</div>
+          <Link className="button delete" to={`/control/recipe/${recipe.id}/delete`}>Delete</Link>
+        </div>
       )
     } else {
       return null

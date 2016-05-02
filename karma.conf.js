@@ -2,7 +2,7 @@
 module.exports = function(config) {
     config.set({
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: '',
+        basePath: 'normandy/control/tests/',
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -10,19 +10,14 @@ module.exports = function(config) {
 
         // list of files / patterns to load in the browser
         files: [
-            'normandy/control/tests/*.js',
-            { pattern: 'normandy/control/tests/mock/*.json', watched: true, served: true, included: true },
-        ],
-
-        // list of files to exclude
-        exclude: [
-            'test/utils.js',
+            'index.js',
+            { pattern: 'mock/*.json', watched: true, served: true, included: true },
         ],
 
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            'normandy/control/tests/*.js': ['webpack'],
+            'index.js': ['webpack'],
             'normandy/control/static/control/js/components/*.jsx': ['react-jsx'],
         },
 
@@ -56,7 +51,7 @@ module.exports = function(config) {
 
         // proxies
         proxies: {
-          '/api/v1/recipe/?format=json&': '/base/normandy/control/tests/mock/recipes.json'
+          '/api/v1/recipe/?format=json&': '/base/mock/recipes.json'
         },
 
         // enable / disable colors in the output (reporters and logs)

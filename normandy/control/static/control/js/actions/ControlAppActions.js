@@ -4,7 +4,9 @@ export const FETCH_RECIPES = 'FETCH_RECIPES';
 export const RECIPES_RECEIVED = 'RECIPES_RECEIVED';
 export const ADD_RECIPE = 'ADD_RECIPE';
 export const FETCH_SELECTED_RECIPE = 'FETCH_SELECTED_RECIPE';
-export const SELECTED_RECIPE_RECEIVED = 'SELECTED_RECIPE_RECEIVED'
+export const SELECTED_RECIPE_RECEIVED = 'SELECTED_RECIPE_RECEIVED';
+export const REMOVE_RECIPE_FROM_COLLECTION = 'REMOVE_RECIPE_FROM_COLLECTION';
+export const RECIPE_DELETED = 'RECIPE_DELETED';
 
 
 function fetchRecipes() {
@@ -30,6 +32,19 @@ function selectedRecipeReceived(recipe) {
   return {
     type: SELECTED_RECIPE_RECEIVED,
     recipe: recipe
+  }
+}
+
+function removeRecipeFromCollection(recipeId) {
+  return {
+    type: REMOVE_RECIPE_FROM_COLLECTION,
+    recipeId: recipeId
+  }
+}
+
+function recipeDeleted() {
+  return {
+    type: RECIPE_DELETED
   }
 }
 
@@ -63,7 +78,21 @@ export function selectRecipe(recipeId) {
   }
 }
 
+export function deleteRecipe(recipeId) {
+  return dispatch => {
+    dispatch(removeRecipeFromCollection(recipeId));
+
+    return apiFetch(`/api/v1/recipe/${recipeId}/`, {
+        method: 'delete',
+        credentials: 'include',
+      }).then(recipe => {
+        dispatch(recipeDeleted(recipe));
+      });
+  }
+}
+
 export default {
   fetchAllRecipes,
   selectRecipe,
+  deleteRecipe,
 };

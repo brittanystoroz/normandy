@@ -9,6 +9,12 @@ class ControlApp extends React.Component {
     super(props);
   }
 
+  deleteRecipe(e, recipeId) {
+    const { dispatch } = this.props;
+    dispatch(ControlActions.deleteRecipe(recipeId));
+    dispatch(push(`/control/`));
+  }
+
   getChildProps(childType) {
     switch(childType.type.WrappedComponent.name) {
       case 'RecipeList':
@@ -16,7 +22,7 @@ class ControlApp extends React.Component {
       case 'RecipeForm':
         return {};
       case 'DeleteRecipe':
-        return {};
+        return { deleteRecipe: this.deleteRecipe.bind(this) };
       default:
         throw new Error('No components to load :(');
     }
