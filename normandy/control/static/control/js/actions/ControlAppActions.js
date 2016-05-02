@@ -3,7 +3,8 @@ import apiFetch from '../utils/apiFetch.js';
 export const FETCH_RECIPES = 'FETCH_RECIPES';
 export const RECIPES_RECEIVED = 'RECIPES_RECEIVED';
 export const ADD_RECIPE = 'ADD_RECIPE';
-export const SET_SELECTED_RECIPE = 'SET_SELECTED_RECIPE';
+export const FETCH_SELECTED_RECIPE = 'FETCH_SELECTED_RECIPE';
+export const SELECTED_RECIPE_RECEIVED = 'SELECTED_RECIPE_RECEIVED'
 
 
 function fetchRecipes() {
@@ -19,6 +20,19 @@ function recipesReceived(recipes) {
   }
 }
 
+function fetchSelectedRecipe() {
+  return {
+    type: FETCH_SELECTED_RECIPE,
+  }
+}
+
+function selectedRecipeReceived(recipe) {
+  return {
+    type: SELECTED_RECIPE_RECEIVED,
+    recipe: recipe
+  }
+}
+
 export function fetchAllRecipes() {
   return dispatch => {
     dispatch(fetchRecipes());
@@ -31,14 +45,25 @@ export function fetchAllRecipes() {
   }
 }
 
-export function setSelectedRecipe(recipe) {
-  return {
-    type: SET_SELECTED_RECIPE,
-    recipe: recipe
+export function selectRecipe(recipeId) {
+  if (recipeId) {
+    return dispatch => {
+      dispatch(fetchSelectedRecipe());
+
+      return apiFetch(`/api/v1/recipe/${recipeId}/`, {
+        credentials: 'include',
+      }).then(recipe => {
+        dispatch(selectedRecipeReceived(recipe));
+      });
+    }
+  } else {
+    return dispatch => {
+      dispatch(selectedRecipeReceived(null));
+    }
   }
 }
 
 export default {
   fetchAllRecipes,
-  setSelectedRecipe,
+  selectRecipe,
 };

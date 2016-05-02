@@ -2,13 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import ControlActions from '../actions/ControlAppActions.js'
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    recipes: state.recipeCollection.recipes,
-    isFetching: state.recipeCollection.isFetching
-  }
-}
-
 class RecipeDataRow extends React.Component {
   constructor(props) {
     super(props);
@@ -18,7 +11,7 @@ class RecipeDataRow extends React.Component {
     let recipe = this.props.recipe;
 
     return (
-      <tr key={recipe.id}>
+      <tr key={recipe.id} onClick={(e) => { this.props.editRecipe(e, recipe.id)}}>
         <td>{recipe.name}</td>
         <td>{recipe.action ? recipe.action.name : 'No action set'}</td>
         <td>
@@ -45,7 +38,7 @@ class RecipeList extends React.Component {
   componentDidMount() {
     const { dispatch } = this.props
     dispatch(ControlActions.fetchAllRecipes());
-    dispatch(ControlActions.setSelectedRecipe(null));
+    dispatch(ControlActions.selectRecipe(null));
   }
 
   render() {
@@ -71,6 +64,13 @@ class RecipeList extends React.Component {
         </table>
       </div>
     )
+  }
+}
+
+let mapStateToProps = (state, ownProps) => {
+  return {
+    recipes: state.recipeCollection.recipes,
+    isFetching: state.recipeCollection.isFetching
   }
 }
 

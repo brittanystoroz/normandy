@@ -8,8 +8,15 @@ import { Router, browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux'
 
 const store = controlStore({
-  recipes: [],
-  selectedRecipe: null
+  recipeCollection: {
+    recipes: [],
+    isFetching: false,
+  },
+  selectedRecipe: {
+    recipe: null,
+    isFetching: false,
+    isDirty: false
+  }
 });
 
 const history = syncHistoryWithStore(browserHistory, store);

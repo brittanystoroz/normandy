@@ -1,7 +1,13 @@
-import { FETCH_RECIPES, RECIPES_RECEIVED, ADD_RECIPE, SET_SELECTED_RECIPE } from '../actions/ControlAppActions.js';
+import {
+  FETCH_RECIPES, RECIPES_RECEIVED, ADD_RECIPE,
+  FETCH_SELECTED_RECIPE, SELECTED_RECIPE_RECEIVED } from '../actions/ControlAppActions.js';
 
 const initialRecipesState = {
   recipes: [], isFetching: false
+}
+
+const initialSelectedRecipeState = {
+  recipe: null, isFetching: false, isDirty: false
 }
 
 export function recipeCollection(state = initialRecipesState, action) {
@@ -27,10 +33,17 @@ export function recipeCollection(state = initialRecipesState, action) {
   }
 }
 
-export function selectedRecipe(state = null, action) {
+export function selectedRecipe(state = initialSelectedRecipeState, action) {
   switch (action.type) {
-    case SET_SELECTED_RECIPE:
-      return action.recipe;
+    case FETCH_SELECTED_RECIPE:
+      return Object.assign({}, state, {
+        isFetching: true
+      })
+    case SELECTED_RECIPE_RECEIVED:
+      return Object.assign({}, state, {
+        recipe: action.recipe,
+        isFetching: false
+      })
     default:
       return state;
   }
