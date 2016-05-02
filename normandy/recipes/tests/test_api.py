@@ -284,6 +284,7 @@ class TestFetchBundleAPI(object):
             'name': recipe.name,
             'id': recipe.id,
             'revision_id': recipe.revision_id,
+            'enabled': recipe.enabled,
             'action': {
                 'name': action.name,
                 'implementation_url': Whatever.endswith(impl_url),
@@ -292,6 +293,10 @@ class TestFetchBundleAPI(object):
             'arguments': {
                 'foo': 'bar',
             },
+            'sample_rate': recipe.sample_rate,
+            'release_channels': {
+                'name': recipe.release_channels.name
+            }
         }]
 
     def test_it_filters_by_locale(self, client):

@@ -12,6 +12,7 @@ class TestRecipeSerializer:
     def test_it_works(self, rf):
         recipe = RecipeFactory(arguments={'foo': 'bar'})
         action = recipe.action
+        release_channels = recipe.release_channels
         serializer = RecipeSerializer(recipe, context={'request': rf.get('/')})
 
         action_url = reverse('recipes:action-implementation', kwargs={
@@ -22,6 +23,7 @@ class TestRecipeSerializer:
             'name': recipe.name,
             'id': recipe.id,
             'revision_id': recipe.revision_id,
+            'enabled': recipe.enabled,
             'action': {
                 'name': action.name,
                 'implementation_url': Whatever.endswith(action_url),
@@ -29,6 +31,10 @@ class TestRecipeSerializer:
             },
             'arguments': {
                 'foo': 'bar',
+            },
+            'sample_rate': recipe.sample_rate,
+            'release_channels': {
+                'name': release_channels.name
             }
         }
 
@@ -49,6 +55,11 @@ def test_bundle_serializer(rf):
         'name': recipe.name,
         'id': recipe.id,
         'revision_id': recipe.revision_id,
+        'enabled': recipe.enabled,
         'action': Whatever(),
         'arguments': Whatever(),
+        'sample_rate': recipe.sample_rate,
+        'release_channels': {
+            'name': recipe.release_channels.name
+        }
     }]
