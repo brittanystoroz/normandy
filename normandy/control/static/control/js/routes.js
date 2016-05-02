@@ -7,8 +7,20 @@ import DeleteRecipe from './components/DeleteRecipe.jsx';
 
 export default (
   <Route component={ControlApp}>
-    <Route path='control/' component={RecipeList} />
-    <Route path='control/recipe/:id/' component={RecipeForm} />
-    <Route path='control/recipe/:id/delete' component={DeleteRecipe} />
+    <Route path='control/'
+      component={RecipeList}
+      pageTitle="Recipes"
+      ctaButton={{text: 'Add New', icon: 'plus', link: '#'}}
+    />
+    <Route path='control/recipe/:id/'
+      component={RecipeForm}
+      pageTitle="Edit Recipe: "
+      ctaButton={{text: 'History', icon: 'history', link: '#'}}
+    />
+    <Route
+      path='control/recipe/:id/delete'
+      component={DeleteRecipe}
+      pageTitle="DeleteRecipe: "
+    />
   </Route>
 );
