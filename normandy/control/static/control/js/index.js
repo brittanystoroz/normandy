@@ -1,11 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
-import controlStore from './stores/ControlStore.js'
-import ControlAppRoutes from './routes.js'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import controlStore from './stores/ControlStore.js';
+import ControlAppRoutes from './routes.js';
 
 import { Router, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux'
+import { syncHistoryWithStore } from 'react-router-redux';
 
 const store = controlStore({
   recipeCollection: {
@@ -29,7 +29,7 @@ class Root extends React.Component {
           {ControlAppRoutes}
         </Router>
       </Provider>
-    )
+    );
   }
 }
 

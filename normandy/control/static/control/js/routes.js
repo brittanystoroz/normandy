@@ -1,9 +1,8 @@
-import React from 'react';
+import React from 'react'; // eslint-disable-line no-unused-vars
 import { Route } from 'react-router';
 import ControlApp from './components/ControlApp.jsx';
 import RecipeList from './components/RecipeList.jsx';
 import RecipeFormContainer from './components/RecipeFormContainer.jsx';
-import RecipeForm from './components/RecipeForm.jsx';
 import DeleteRecipe from './components/DeleteRecipe.jsx';
 
 export default (

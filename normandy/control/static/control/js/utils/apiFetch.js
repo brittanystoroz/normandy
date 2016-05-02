@@ -26,7 +26,7 @@ export function getQueryParamStringFromDict(obj) {
     }
     qs += key + '=' + encodeURIComponent(obj[key]);
     qs += '&';
-  };
+  }
   qs = qs.slice(0, -1);
   return '?' + qs;
 }
@@ -46,7 +46,7 @@ export function apiFetchRaw(url, options={}) {
     if (method === 'get' || method === 'head') {
       /* The slice is to remove the ? that that
        * `queryParamStringFromDict` includes, since it was added above. */
-      url += queryParamStringFromDict(options.data).slice(1);
+      url += getQueryParamStringFromDict(options.data).slice(1);
     } else {
       options.body = JSON.stringify(options.data);
     }
