@@ -2,29 +2,40 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import ControlActions from '../actions/ControlAppActions.js'
+import { reduxForm } from 'redux-form'
 
 class RecipeForm extends React.Component {
   constructor(props) {
     super(props);
   }
 
+  handleSubmit(e) {
+    e.preventDefault();
+  }
+
   render() {
+    const { fields: { name }, handleSubmit } = this.props;
     let recipe = this.props.recipe;
-    if (recipe) {
-      return (
+    return (
+      <form onSubmit={handleSubmit}>
         <div>
-          <div className="fluid-8">pre-filled form to edit recipe {recipe.name}</div>
-          <Link className="button delete" to={`/control/recipe/${recipe.id}/delete`}>Delete</Link>
+          <label>Name</label>
+          <input type="text" field={name} {...name} />
         </div>
-      )
-    } else {
-      return (
-        <div>
-          <div className="fluid-8">blank form to add new recipe :)</div>
-        </div>
-      )
-    }
+        <button type="submit">Submit</button>
+      </form>
+    )
   }
 }
 
-export default RecipeForm
+let mapStateToProps = (state, props) => {
+  return {
+    initialValues: state.selectedRecipe.recipe,
+    recipe: state.selectedRecipe.recipe
+  }
+}
+
+export default reduxForm({
+  form: 'recipe',
+  fields: ['name']
+}, mapStateToProps)(RecipeForm)
