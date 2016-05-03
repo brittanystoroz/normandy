@@ -9,7 +9,7 @@ class CtaBtn extends React.Component {
 
   render() {
     return (
-      <Link className="button" to={`/control/recipe/new/`}><i className={"pre fa fa-" + this.props.icon}></i> {this.props.buttonText}</Link>
+      <Link className="button" to={this.props.link}><i className={"pre fa fa-" + this.props.icon}></i> {this.props.buttonText}</Link>
     )
   }
 }
@@ -22,7 +22,7 @@ class Header extends React.Component {
   render() {
     let ctaBtn;
     if (this.props.ctaButton) {
-      ctaBtn = <CtaBtn buttonText={this.props.ctaButton.text} icon={this.props.ctaButton.icon} link={this.props.ctaButton.link} />
+      ctaBtn = <CtaBtn buttonText={this.props.ctaButton.text} icon={this.props.ctaButton.icon} link={this.props.currentLocation + this.props.ctaButton.link} />
     }
     return (
       <div id="page-header">

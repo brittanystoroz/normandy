@@ -22,6 +22,8 @@ class ControlApp extends React.Component {
         return { editRecipe: this.editRecipe.bind(this) };
       case 'RecipeFormContainer':
         return {};
+      case 'RecipeHistory':
+        return {};
       case 'DeleteRecipe':
         return { deleteRecipe: this.deleteRecipe.bind(this) };
       default:
@@ -37,7 +39,7 @@ class ControlApp extends React.Component {
   render() {
     return (
       <div>
-        <Header pageType={this.props.children.props.route} />
+        <Header pageType={this.props.children.props.route} currentLocation={this.props.location.pathname} />
         <div id="content" className="wrapper">
             <div className="fluid-8">
               {React.Children.map(this.props.children,
