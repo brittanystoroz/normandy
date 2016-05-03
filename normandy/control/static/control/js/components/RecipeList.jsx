@@ -35,7 +35,7 @@ class RecipeList extends React.Component {
     super(props);
   }
 
-  componentDidMount() {
+  componentWillMount() {
     const { dispatch } = this.props
     dispatch(ControlActions.fetchAllRecipes());
     dispatch(ControlActions.selectRecipe(null));

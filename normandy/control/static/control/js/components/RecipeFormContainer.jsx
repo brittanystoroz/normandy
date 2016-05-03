@@ -1,11 +1,23 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import ControlActions from '../actions/ControlAppActions.js'
 import RecipeForm from './RecipeForm.jsx'
 
 class RecipeFormContainer extends React.Component {
   constructor(props) {
     super(props);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleSubmit(values) {
+    if (this.props.recipe) {
+      let recipeId = { id: this.props.recipe.id };
+      this.props.dispatch(ControlActions.updateRecipe(Object.assign(values, recipeId)));
+    } else {
+      this.props.dispatch(ControlActions.addRecipe(values));
+    }
+    this.props.dispatch(push(`/control/`));
   }
 
   componentWillMount() {
@@ -17,7 +29,9 @@ class RecipeFormContainer extends React.Component {
 
   render() {
     return (
-      <RecipeForm recipe={this.props.recipe} />
+      <div className="fluid-7">
+        <RecipeForm submitHandler={this.handleSubmit} />
+      </div>
     )
   }
 }
@@ -30,8 +44,8 @@ let mapStateToProps = (state) => {
   }
 }
 
-RecipeForm.propTypes = {
-  recipe: React.PropTypes.object,
+RecipeFormContainer.propTypes = {
+  submitHandler: React.PropTypes.func,
 }
 
 export default connect(

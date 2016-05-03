@@ -1,6 +1,8 @@
 import {
-  FETCH_RECIPES, RECIPES_RECEIVED, ADD_RECIPE,
+  FETCH_RECIPES, RECIPES_RECEIVED,
   FETCH_SELECTED_RECIPE, SELECTED_RECIPE_RECEIVED,
+  ADD_RECIPE_TO_COLLECTION, RECIPE_ADDED,
+  UPDATE_RECIPE_IN_COLLECTION, RECIPE_UPDATED,
   REMOVE_RECIPE_FROM_COLLECTION, RECIPE_DELETED } from '../actions/ControlAppActions.js';
 
 const initialRecipesState = {
@@ -22,12 +24,21 @@ export function recipeCollection(state = initialRecipesState, action) {
         isFetching: false,
         recipes: action.recipes
       });
-    case ADD_RECIPE:
+    case ADD_RECIPE_TO_COLLECTION:
       return Object.assign({}, state, {
         recipes: [
           ...state.recipes,
           action.recipe
         ]
+      });
+    case UPDATE_RECIPE_IN_COLLECTION:
+      return Object.assign({}, state, {
+        recipes: state.recipes.map((recipe) => {
+          if (recipe.id === action.recipe.id) {
+            recipe = action.recipe;
+          }
+          return recipe;
+        })
       });
     case REMOVE_RECIPE_FROM_COLLECTION:
       return Object.assign({}, state, {
@@ -54,6 +65,16 @@ export function selectedRecipe(state = initialSelectedRecipeState, action) {
     case RECIPE_DELETED:
       return Object.assign({}, state, {
         recipe: null,
+        isFetching: false
+      });
+    case RECIPE_ADDED:
+      return Object.assign({}, state, {
+        recipe: action.recipe,
+        isFetching: false
+      });
+    case RECIPE_UPDATED:
+      return Object.assign({}, state, {
+        recipe: action.recipe,
         isFetching: false
       });
     default:

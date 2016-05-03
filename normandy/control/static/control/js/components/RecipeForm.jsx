@@ -9,20 +9,24 @@ class RecipeForm extends React.Component {
     super(props);
   }
 
-  handleSubmit(e) {
-    e.preventDefault();
-  }
-
   render() {
-    const { fields: { name }, handleSubmit } = this.props;
-    let recipe = this.props.recipe;
+    const { fields: { name }, id, handleSubmit, submitForm } = this.props;
     return (
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name</label>
-          <input type="text" field={name} {...name} />
+      <form onSubmit={handleSubmit(submitForm)} className="crud-form">
+        <div className="row">
+          <div className="fluid-3">
+            <label>Name</label>
+            <input type="text" field={name} {...name} />
+          </div>
         </div>
-        <button type="submit">Submit</button>
+        <div className="row form-action-buttons">
+          <div className="fluid-2">
+            <Link className="button delete" to={`/control/recipe/${id}/delete`}>Delete</Link>
+          </div>
+          <div className="fluid-2 float-right">
+            <button className="button" type="submit">Submit</button>
+          </div>
+        </div>
       </form>
     )
   }
@@ -30,8 +34,9 @@ class RecipeForm extends React.Component {
 
 let mapStateToProps = (state, props) => {
   return {
+    id: ((state.selectedRecipe.recipe) ? state.selectedRecipe.recipe.id : null),
     initialValues: state.selectedRecipe.recipe,
-    recipe: state.selectedRecipe.recipe
+    submitForm: props.submitHandler,
   }
 }
 
