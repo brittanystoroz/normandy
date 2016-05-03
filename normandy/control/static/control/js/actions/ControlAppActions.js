@@ -88,14 +88,17 @@ export function shouldFetchRecipes(state) {
 }
 
 export function fetchAllRecipes() {
-  return dispatch => {
-    dispatch(fetchRecipes());
+  return (dispatch, getState) => {
+    if (shouldFetchRecipes(getState())) {
+      dispatch(fetchRecipes());
 
-    return apiFetch('/api/v1/recipe/', {
-      credentials: 'include',
-    }).then(recipes => {
-      dispatch(recipesReceived(recipes));
-    });
+      return apiFetch('/api/v1/recipe/', {
+        credentials: 'include',
+      }).then(recipes => {
+        dispatch(recipesReceived(recipes));
+      });
+    }
+
   };
 }
 
