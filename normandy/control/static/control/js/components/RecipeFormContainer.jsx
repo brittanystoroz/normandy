@@ -12,8 +12,7 @@ class RecipeFormContainer extends React.Component {
 
   handleSubmit(values) {
     if (this.props.recipe) {
-      let recipeId = { id: this.props.recipe.id };
-      this.props.dispatch(ControlActions.updateRecipe(Object.assign(values, recipeId)));
+      this.props.dispatch(ControlActions.updateRecipe(values, this.props.recipe.id));
     } else {
       this.props.dispatch(ControlActions.addRecipe(values));
     }

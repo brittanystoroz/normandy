@@ -34,8 +34,8 @@ export function recipeCollection(state = initialRecipesState, action) {
     case UPDATE_RECIPE_IN_COLLECTION:
       return Object.assign({}, state, {
         recipes: state.recipes.map((recipe) => {
-          if (recipe.id === action.recipe.id) {
-            recipe = action.recipe;
+          if (recipe.id === action.recipeId) {
+            recipe = Object.assign(recipe, action.recipe);
           }
           return recipe;
         })

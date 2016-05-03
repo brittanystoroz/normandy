@@ -65,10 +65,11 @@ function recipeAdded(recipe) {
   };
 }
 
-function updateRecipeInCollection(recipe) {
+function updateRecipeInCollection(recipe, recipeId) {
   return {
     type: UPDATE_RECIPE_IN_COLLECTION,
-    recipe
+    recipe,
+    recipeId,
   };
 }
 
@@ -138,21 +139,29 @@ export function addRecipe(recipe) {
     dispatch(addRecipeToCollection(recipe));
 
     return apiFetch('/api/v1/recipe/', {
+      data: recipe,
       method: 'post',
       credentials: 'include',
+      headers: {
+        'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
+      }
     }).then(recipe => {
       dispatch(recipeAdded(recipe));
     });
   };
 }
 
-export function updateRecipe(recipe) {
+export function updateRecipe(recipe, recipeId) {
   return dispatch => {
-    dispatch(updateRecipeInCollection(recipe));
+    dispatch(updateRecipeInCollection(recipe, recipeId));
 
-    return apiFetch(`/api/v1/recipe/${recipe.id}/`, {
-      method: 'put',
+    return apiFetch(`/api/v1/recipe/${recipeId}/`, {
+      data: recipe,
+      method: 'patch',
       credentials: 'include',
+      headers: {
+        'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
+      }
     }).then(recipe => {
       dispatch(recipeUpdated(recipe));
     });
