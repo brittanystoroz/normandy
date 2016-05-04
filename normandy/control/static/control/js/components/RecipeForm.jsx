@@ -7,12 +7,27 @@ import { reduxForm } from 'redux-form'
 class RecipeForm extends React.Component {
   constructor(props) {
     super(props);
+    this.submitForm = this.submitForm.bind(this);
+  }
+
+  componentWillMount() {
+    if (this.props.recipeId) {
+      this.props.getRecipeData(this.props.recipeId);
+    }
+  }
+
+  submitForm(values) {
+    if (this.props.recipeId) {
+      this.props.dispatch(ControlActions.updateRecipe(values, this.props.recipeId));
+    } else {
+      this.props.dispatch(ControlActions.addRecipe(values));
+    }
   }
 
   render() {
-    const { fields: { name }, id, handleSubmit, submitForm } = this.props;
+    const { fields: { name }, recipeId, handleSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit(submitForm)} className="crud-form">
+      <form onSubmit={handleSubmit(this.submitForm)} className="crud-form">
         <div className="row">
           <div className="fluid-3">
             <label>Name</label>
@@ -21,7 +36,7 @@ class RecipeForm extends React.Component {
         </div>
         <div className="row form-action-buttons">
           <div className="fluid-2">
-            <Link className="button delete" to={`/control/recipe/${id}/delete`}>Delete</Link>
+            <Link className="button delete" to={`/control/recipe/${recipeId}/delete`}>Delete</Link>
           </div>
           <div className="fluid-2 float-right">
             <button className="button" type="submit">Submit</button>
@@ -32,15 +47,26 @@ class RecipeForm extends React.Component {
   }
 }
 
-let mapStateToProps = (state, props) => {
-  return {
-    id: ((state.selectedRecipe.recipe) ? state.selectedRecipe.recipe.id : null),
-    initialValues: state.selectedRecipe.recipe,
-    submitForm: props.submitHandler,
+const mapStateToProps = (state, props) => {
+  let recipeData = null;
+  if (state.controlApp.recipes) {
+    recipeData = state.controlApp.recipes.find(recipe => {
+      return recipe.id === state.controlApp.selectedRecipe;
+    });
   }
+
+  return {
+    recipeId: state.controlApp.selectedRecipe || parseInt(props.routeParams.id) || null,
+    initialValues: recipeData
+  };
+}
+
+RecipeForm.propTypes = {
+  recipeId: React.PropTypes.number,
+  fields: React.PropTypes.object.isRequired,
 }
 
 export default reduxForm({
   form: 'recipe',
-  fields: ['name']
+  fields: ['name'],
 }, mapStateToProps)(RecipeForm)

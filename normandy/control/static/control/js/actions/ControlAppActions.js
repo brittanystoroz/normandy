@@ -1,176 +1,191 @@
 import apiFetch from '../utils/apiFetch.js';
 
-export const FETCH_RECIPES = 'FETCH_RECIPES';
+export const REQUEST_IN_PROGRESS = 'REQUEST_IN_PROGRESS';
+export const REQUEST_COMPLETE = 'REQUEST_COMPLETE';
+
 export const RECIPES_RECEIVED = 'RECIPES_RECEIVED';
-export const FETCH_SELECTED_RECIPE = 'FETCH_SELECTED_RECIPE';
-export const SELECTED_RECIPE_RECEIVED = 'SELECTED_RECIPE_RECEIVED';
-export const REMOVE_RECIPE_FROM_COLLECTION = 'REMOVE_RECIPE_FROM_COLLECTION';
-export const RECIPE_DELETED = 'RECIPE_DELETED';
-export const ADD_RECIPE_TO_COLLECTION = 'ADD_RECIPE_TO_COLLECTION';
-export const RECIPE_ADDED = 'RECIPE_ADDED';
-export const UPDATE_RECIPE_IN_COLLECTION = 'UPDATE_RECIPE_IN_COLLECTION';
+export const SINGLE_RECIPE_RECEIVED = 'SELECTED_RECIPE_RECEIVED';
+
+export const SET_SELECTED_RECIPE = 'SET_SELECTED_RECIPE';
+
 export const RECIPE_UPDATED = 'RECIPE_UPDATED';
+export const RECIPE_ADDED = 'RECIPE_ADDED';
+export const RECIPE_DELETED = 'RECIPE_DELETED';
 
 
-function fetchRecipes() {
+const BASE_API_URL = '/api/v1/recipe/';
+
+const API_REQUEST_SETTINGS = {
+  credentials: 'include',
+  headers: {
+    'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
+  }
+};
+
+const makeApiRequest = function(dispatch, options) {
+  return apiFetch(options.url, {
+    ...options.settings,
+    ...API_REQUEST_SETTINGS
+  })
+  .then(response => {
+    console.log('success: ', response);
+    dispatch(requestComplete('success'));
+    dispatch(options.actionOnSuccess(options.successActionParams || response));
+  })
+  .catch(err => {
+    console.log('err: ', err);
+    dispatch(requestComplete('failure'));
+  });
+};
+
+
+function requestInProgress() {
   return {
-    type: FETCH_RECIPES,
-  };
+    type: REQUEST_IN_PROGRESS
+  }
+}
+
+function requestComplete(status) {
+  return {
+    type: REQUEST_COMPLETE,
+    status: status
+  }
 }
 
 function recipesReceived(recipes) {
   return {
     type: RECIPES_RECEIVED,
-    recipes: recipes,
+    recipes
   };
 }
 
-function fetchSelectedRecipe() {
+function singleRecipeReceived(recipe) {
   return {
-    type: FETCH_SELECTED_RECIPE,
+    type: SINGLE_RECIPE_RECEIVED,
+    recipe
   };
 }
 
-function selectedRecipeReceived(recipe) {
+function setSelectedRecipe(recipeId) {
   return {
-    type: SELECTED_RECIPE_RECEIVED,
-    recipe: recipe
-  };
+    type: SET_SELECTED_RECIPE,
+    recipeId
+  }
 }
 
-function removeRecipeFromCollection(recipeId) {
+function recipeDeleted(recipeId) {
   return {
-    type: REMOVE_RECIPE_FROM_COLLECTION,
-    recipeId: recipeId
-  };
-}
-
-function recipeDeleted() {
-  return {
-    type: RECIPE_DELETED
-  };
-}
-
-function addRecipeToCollection(recipe) {
-  return {
-    type: ADD_RECIPE_TO_COLLECTION,
-    recipe: recipe
+    type: RECIPE_DELETED,
+    recipeId
   };
 }
 
 function recipeAdded(recipe) {
   return {
     type: RECIPE_ADDED,
-    recipe: recipe
-  };
-}
-
-function updateRecipeInCollection(recipe, recipeId) {
-  return {
-    type: UPDATE_RECIPE_IN_COLLECTION,
-    recipe,
-    recipeId,
+    recipe
   };
 }
 
 function recipeUpdated(recipe) {
   return {
     type: RECIPE_UPDATED,
-    recipe: recipe
+    recipe
   };
 }
 
+
+
 export function shouldFetchRecipes(state) {
-  if (state.recipeCollection.recipes.length === 0) {
+  if (state.controlApp.recipeListNeedsFetch === true &&
+      state.controlApp.isFetching === false) {
     return true;
-  } else if (state.recipeCollection.recipes.isFetching) {
+  } else {
     return false;
   }
 }
 
+
 export function fetchAllRecipes() {
   return (dispatch, getState) => {
     if (shouldFetchRecipes(getState())) {
-      dispatch(fetchRecipes());
+      let apiRequestConfig = {
+        url: BASE_API_URL,
+        settings: {
+          method: 'get'
+        },
+        actionOnSuccess: recipesReceived
+      }
 
-      return apiFetch('/api/v1/recipe/', {
-        credentials: 'include',
-      }).then(recipes => {
-        dispatch(recipesReceived(recipes));
-      });
+      makeApiRequest(dispatch, apiRequestConfig);
     }
-
   };
 }
 
-export function selectRecipe(recipeId) {
-  if (recipeId) {
-    return dispatch => {
-      dispatch(fetchSelectedRecipe());
+export function fetchSingleRecipe(recipeId) {
+  return dispatch => {
+    let apiRequestConfig = {
+      url: `${BASE_API_URL}${recipeId}/`,
+      settings: {
+        method: 'get'
+      },
+      actionOnSuccess: singleRecipeReceived
+    }
 
-      return apiFetch(`/api/v1/recipe/${recipeId}/`, {
-        credentials: 'include',
-      }).then(recipe => {
-        dispatch(selectedRecipeReceived(recipe));
-      });
-    };
-  } else {
-    return dispatch => {
-      dispatch(selectedRecipeReceived(null));
-    };
-  }
+    makeApiRequest(dispatch, apiRequestConfig);
+  };
 }
 
 export function deleteRecipe(recipeId) {
   return dispatch => {
-    dispatch(removeRecipeFromCollection(recipeId));
+    let apiRequestConfig = {
+      url: `${BASE_API_URL}${recipeId}/`,
+      settings: {
+        method: 'delete'
+      },
+      actionOnSuccess: recipeDeleted,
+      successActionParams: recipeId
+    }
 
-    return apiFetch(`/api/v1/recipe/${recipeId}/`, {
-      method: 'delete',
-      credentials: 'include',
-    }).then(recipe => {
-      dispatch(recipeDeleted(recipe));
-    });
+    makeApiRequest(dispatch, apiRequestConfig);
   };
 }
 
 export function addRecipe(recipe) {
   return dispatch => {
-    dispatch(addRecipeToCollection(recipe));
+    let apiRequestConfig = {
+      url: BASE_API_URL,
+      settings: {
+        data: recipe,
+        method: 'post'
+      },
+      actionOnSuccess: recipeAdded
+    }
 
-    return apiFetch('/api/v1/recipe/', {
-      data: recipe,
-      method: 'post',
-      credentials: 'include',
-      headers: {
-        'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
-      }
-    }).then(recipe => {
-      dispatch(recipeAdded(recipe));
-    });
+    makeApiRequest(dispatch, apiRequestConfig);
   };
 }
 
 export function updateRecipe(recipe, recipeId) {
   return dispatch => {
-    dispatch(updateRecipeInCollection(recipe, recipeId));
+    dispatch(requestInProgress());
+    let apiRequestConfig = {
+      url: `${BASE_API_URL}${recipeId}/`,
+      settings: {
+        data: recipe,
+        method: 'patch'
+      },
+      actionOnSuccess: recipeUpdated
+    }
 
-    return apiFetch(`/api/v1/recipe/${recipeId}/`, {
-      data: recipe,
-      method: 'patch',
-      credentials: 'include',
-      headers: {
-        'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
-      }
-    }).then(recipe => {
-      dispatch(recipeUpdated(recipe));
-    });
+    makeApiRequest(dispatch, apiRequestConfig);
   };
 }
 
 export default {
   fetchAllRecipes,
-  selectRecipe,
+  fetchSingleRecipe,
+  setSelectedRecipe,
   deleteRecipe,
   addRecipe,
   updateRecipe,

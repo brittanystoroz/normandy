@@ -34,9 +34,17 @@ class Header extends React.Component {
 }
 
 let mapStateToProps = function(state, ownProps) {
+  let recipe = null;
+
+  if (state.controlApp.recipes) {
+    recipe = state.controlApp.recipes.find(recipe => {
+      return recipe.id === state.controlApp.selectedRecipe;
+    });
+  }
+
   return {
     pageTitle: ownProps.pageType.pageTitle || 'Recipes',
-    subTitle: (state.selectedRecipe.recipe) ? state.selectedRecipe.recipe.name : null,
+    subTitle: (recipe) ? recipe.name : null,
     ctaButton: ownProps.pageType.ctaButton || null,
   };
 }

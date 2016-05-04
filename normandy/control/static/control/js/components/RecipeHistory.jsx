@@ -8,14 +8,11 @@ class RecipeHistory extends React.Component {
   }
 
   componentWillMount() {
-    const { dispatch } = this.props
-    if (!this.props.recipe) {
-      dispatch(ControlActions.selectRecipe(this.props.routeParams.id));
-    }
+    this.props.getRecipeData(this.props.recipeId);
   }
 
   render() {
-    let recipe = this.props.recipe;
+    const { recipe } = this.props;
     if (recipe) {
       return (
         <div className="fluid-7">
@@ -28,14 +25,22 @@ class RecipeHistory extends React.Component {
   }
 }
 
-let mapStateToProps = (state) => {
-  return {
-    recipe: state.selectedRecipe.recipe,
-    isFetching: state.selectedRecipe.isFetching
+const mapStateToProps = (state, props) => {
+  let recipeData = null;
+  if (state.controlApp.recipes) {
+    recipeData = state.controlApp.recipes.find(recipe => {
+      return recipe.id === state.controlApp.selectedRecipe;
+    });
   }
+
+  return {
+    recipeId: state.controlApp.selectedRecipe || parseInt(props.routeParams.id) || null,
+    recipe: recipeData
+  };
 }
 
 RecipeHistory.propTypes = {
+  recipeId: React.PropTypes.number,
   recipe: React.PropTypes.object,
 }
 

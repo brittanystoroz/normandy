@@ -7,33 +7,15 @@ import ControlActions from '../actions/ControlAppActions.js'
 class ControlApp extends React.Component {
   constructor(props) {
     super(props);
+    this.getRecipeData = this.getRecipeData.bind(this);
   }
 
-  deleteRecipe(e, recipeId) {
+  getRecipeData(recipeId) {
     const { dispatch } = this.props;
-    dispatch(ControlActions.deleteRecipe(recipeId));
-    dispatch(push(`/control/`));
-  }
-
-  getChildProps(childType) {
-    let componentName = (childType.name === 'Connect') ? childType.WrappedComponent.name : childType.name;
-    switch(componentName) {
-      case 'RecipeList':
-        return { editRecipe: this.editRecipe.bind(this) };
-      case 'RecipeFormContainer':
-        return {};
-      case 'RecipeHistory':
-        return {};
-      case 'DeleteRecipe':
-        return { deleteRecipe: this.deleteRecipe.bind(this) };
-      default:
-        throw new Error('No components to load :(');
+    if (!this.props.recipes) {
+      dispatch(ControlActions.setSelectedRecipe(recipeId));
+      dispatch(ControlActions.fetchSingleRecipe(recipeId));
     }
-  }
-
-  editRecipe(e, recipeId) {
-    const { dispatch } = this.props;
-    dispatch(push(`/control/recipe/${recipeId}/`));
   }
 
   render() {
@@ -43,7 +25,7 @@ class ControlApp extends React.Component {
         <div id="content" className="wrapper">
             <div className="fluid-8">
               {React.Children.map(this.props.children,
-              (child) => React.cloneElement(child, this.getChildProps(child.type)))}
+              (child) => React.cloneElement(child, { getRecipeData: this.getRecipeData }))}
             </div>
         </div>
       </div>
@@ -52,10 +34,9 @@ class ControlApp extends React.Component {
 }
 
 let mapStateToProps = (state, ownProps) => {
-  const { selectedRecipe, recipeCollection } = state
+  const { recipes } = state.controlApp
   return {
-    selectedRecipe,
-    recipeCollection
+    recipes
   }
 }
 
