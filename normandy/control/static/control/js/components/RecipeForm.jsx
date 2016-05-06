@@ -3,17 +3,13 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import ControlActions from '../actions/ControlAppActions.js'
 import { reduxForm } from 'redux-form'
+import composeRecipeContainer from './RecipeContainer.jsx'
+
 
 class RecipeForm extends React.Component {
   constructor(props) {
     super(props);
     this.submitForm = this.submitForm.bind(this);
-  }
-
-  componentWillMount() {
-    if (this.props.recipeId) {
-      this.props.getRecipeData(this.props.recipeId);
-    }
   }
 
   submitForm(values) {
@@ -36,7 +32,7 @@ class RecipeForm extends React.Component {
         </div>
         <div className="row form-action-buttons">
           <div className="fluid-2">
-            <Link className="button delete" to={`/control/recipe/${recipeId}/delete`}>Delete</Link>
+            <Link className="button delete" to={`/control/recipe/${recipeId}/delete/`}>Delete</Link>
           </div>
           <div className="fluid-2 float-right">
             <button className="button" type="submit">Submit</button>
@@ -46,27 +42,14 @@ class RecipeForm extends React.Component {
     )
   }
 }
-
-const mapStateToProps = (state, props) => {
-  let recipeData = null;
-  if (state.controlApp.recipes) {
-    recipeData = state.controlApp.recipes.find(recipe => {
-      return recipe.id === state.controlApp.selectedRecipe;
-    });
-  }
-
-  return {
-    recipeId: state.controlApp.selectedRecipe || parseInt(props.routeParams.id) || null,
-    initialValues: recipeData
-  };
-}
-
 RecipeForm.propTypes = {
-  recipeId: React.PropTypes.number,
   fields: React.PropTypes.object.isRequired,
 }
 
-export default reduxForm({
-  form: 'recipe',
-  fields: ['name'],
-}, mapStateToProps)(RecipeForm)
+export default composeRecipeContainer(reduxForm({
+    form: 'recipe',
+    fields: ['name']
+  }, (state, props) => ({ // mapStateToProps
+    initialValues: (props.recipe || null)
+  })
+)(RecipeForm))

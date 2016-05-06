@@ -2,53 +2,30 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withRouter, Link } from 'react-router';
 
-class CtaBtn extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <Link className="button" to={this.props.link}><i className={"pre fa fa-" + this.props.icon}></i> {this.props.buttonText}</Link>
-    )
-  }
-}
-
 class Header extends React.Component {
   constructor() {
     super();
   }
 
   render() {
+    const { pageTitle, subTitle, ctaButton } = this.props.pageType;
     let ctaBtn;
-    if (this.props.ctaButton) {
-      ctaBtn = <CtaBtn buttonText={this.props.ctaButton.text} icon={this.props.ctaButton.icon} link={this.props.currentLocation + this.props.ctaButton.link} />
+    if (ctaButton) {
+      ctaBtn =
+      <Link className="button" to={this.props.currentLocation + ctaButton.link}>
+        <i className={"pre fa fa-" + ctaButton.icon}></i> {ctaButton.text}
+      </Link>
     }
     return (
       <div id="page-header">
-        <h2><Link to={`/control/`}>{this.props.pageTitle}</Link> <span>{this.props.subTitle}</span></h2>
+        <h2>
+          <Link to={`/control/`}>Recipes</Link>
+          {pageTitle ? [': ', <span>{pageTitle}</span>] : '' }
+        </h2>
         {ctaBtn}
       </div>
     )
   }
 }
 
-let mapStateToProps = function(state, ownProps) {
-  let recipe = null;
-
-  if (state.controlApp.recipes) {
-    recipe = state.controlApp.recipes.find(recipe => {
-      return recipe.id === state.controlApp.selectedRecipe;
-    });
-  }
-
-  return {
-    pageTitle: ownProps.pageType.pageTitle || 'Recipes',
-    subTitle: (recipe) ? recipe.name : null,
-    ctaButton: ownProps.pageType.ctaButton || null,
-  };
-}
-
-export default connect(
-  mapStateToProps
-)(withRouter(Header))
+export default withRouter(Header)

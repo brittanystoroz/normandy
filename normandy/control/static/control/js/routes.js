@@ -10,7 +10,6 @@ export default (
   <Route component={ControlApp}>
     <Route path='control/'
       component={RecipeList}
-      pageTitle="Recipes"
       ctaButton={{text: 'Add New', icon: 'plus', link: 'recipe/new/'}}
     />
     <Route path='control/recipe/new/'
@@ -19,18 +18,18 @@ export default (
     />
     <Route path='control/recipe/:id/'
       component={RecipeForm}
-      pageTitle="Edit Recipe: "
+      pageTitle="Edit Recipe"
       ctaButton={{text: 'History', icon: 'history', link: 'history/'}}
     />
     />
     <Route path='control/recipe/:id/history/'
       component={RecipeHistory}
-      pageTitle="Recipe History: "
+      pageTitle="History"
     />
     <Route
-      path='control/recipe/:id/delete'
+      path='control/recipe/:id/delete/'
       component={DeleteRecipe}
-      pageTitle="DeleteRecipe: "
+      pageTitle="Delete Recipe"
     />
   </Route>
 );

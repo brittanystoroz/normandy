@@ -1,17 +1,9 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import ControlActions from '../actions/ControlAppActions.js'
+import composeRecipeContainer from './RecipeContainer.jsx'
 
 class DeleteRecipe extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  componentWillMount() {
-    this.props.getRecipeData(this.props.recipeId);
-  }
-
   render() {
     const { recipe, recipeId, dispatch } = this.props;
     if (recipe) {
@@ -36,27 +28,4 @@ class DeleteRecipe extends React.Component {
   }
 }
 
-const mapStateToProps = (state, props) => {
-  let recipeData = null;
-  if (state.controlApp.recipes) {
-    recipeData = state.controlApp.recipes.find(recipe => {
-      return recipe.id === state.controlApp.selectedRecipe;
-    });
-  }
-
-  return {
-    recipeId: state.controlApp.selectedRecipe || parseInt(props.routeParams.id) || null,
-    recipe: recipeData,
-    dispatch: props.dispatch
-  };
-}
-
-DeleteRecipe.propTypes = {
-  recipeId: React.PropTypes.number,
-  recipe: React.PropTypes.object,
-}
-
-export default connect(
-  mapStateToProps
-)(DeleteRecipe)
-
+export default composeRecipeContainer(DeleteRecipe);
