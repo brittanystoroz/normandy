@@ -41,7 +41,7 @@ class RecipeList extends React.Component {
 
   componentWillMount() {
     const { dispatch } = this.props
-    dispatch(ControlActions.fetchAllRecipes());
+    dispatch(ControlActions.makeApiRequest('fetchAllRecipes', {}));
     dispatch(ControlActions.setSelectedRecipe(null));
   }
 

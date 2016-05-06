@@ -14,7 +14,7 @@ class ControlApp extends React.Component {
     const { dispatch } = this.props;
     if (!this.props.recipes) {
       dispatch(ControlActions.setSelectedRecipe(recipeId));
-      dispatch(ControlActions.fetchSingleRecipe(recipeId));
+      dispatch(ControlActions.makeApiRequest('fetchSingleRecipe', { recipeId: recipeId }));
     }
   }
 

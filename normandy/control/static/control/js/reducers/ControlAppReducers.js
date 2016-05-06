@@ -9,7 +9,7 @@ let initialState = {
   isFetching: false,
   selectedRecipe: null,
   recipeListNeedsFetch: true
-}
+};
 
 export function controlApp(state = initialState, action) {
   switch (action.type) {
@@ -33,7 +33,7 @@ export function controlApp(state = initialState, action) {
         recipes: [action.recipe],
         recipeListNeedsFetch: true,
         selectedRecipe: action.recipe.id
-      })
+      });
 
     case SET_SELECTED_RECIPE:
       return Object.assign({}, state, {

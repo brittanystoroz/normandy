@@ -18,9 +18,9 @@ class RecipeForm extends React.Component {
 
   submitForm(values) {
     if (this.props.recipeId) {
-      this.props.dispatch(ControlActions.updateRecipe(values, this.props.recipeId));
+      this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', { recipe: values, recipeId: this.props.recipeId }));
     } else {
-      this.props.dispatch(ControlActions.addRecipe(values));
+      this.props.dispatch(ControlActions.makeApiRequest('addRecipe', values));
     }
   }
 

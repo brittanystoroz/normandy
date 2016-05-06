@@ -29,7 +29,7 @@ module.exports = function(config) {
                         exclude: /node_modules/,
                         loader: 'babel',
                         'query': {
-                          presets: ['react', 'es2015']
+                          presets: ['react', 'es2015', 'stage-2']
                         }
                     },
                 ],
@@ -48,11 +48,6 @@ module.exports = function(config) {
 
         // web server port
         port: 9876,
-
-        // proxies
-        proxies: {
-          '/api/v1/recipe/?format=json&': '/base/mock/recipes.json'
-        },
 
         // enable / disable colors in the output (reporters and logs)
         colors: true,

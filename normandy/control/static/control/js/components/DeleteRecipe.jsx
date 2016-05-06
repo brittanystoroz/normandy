@@ -22,7 +22,7 @@ class DeleteRecipe extends React.Component {
             <div className="form-action-buttons">
               <div className="fluid-2 float-right">
                 <input type="submit" value="Confirm" class="delete" onClick={(e) => {
-                  dispatch(ControlActions.deleteRecipe(recipeId));
+                  dispatch(ControlActions.makeApiRequest('deleteRecipe', { recipeId }));
                   dispatch(push(`/control/`));
                 }} />
               </div>
