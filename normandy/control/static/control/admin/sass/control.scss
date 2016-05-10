@@ -171,6 +171,44 @@
   }
 }
 
+#action-configuration {
+  padding: 30px;
+  background: $cream;
+  clear: both;
+  margin: 1em;
+  position: relative;
+
+  .field-wrapper {
+    .fluid-1 {
+      width: 12.5%;
+    }
+    .fluid-3 {
+      width: 37.5%;
+    }
+  }
+
+  i.fa-caret-up {
+    color: $cream;
+    position: absolute;
+    top: -10px;
+    left: 15px;
+  }
+
+  h4 {
+    font-weight: 400;
+  }
+
+  ul {
+    margin-top: 10px;
+  }
+
+  li {
+    list-style-type: none;
+    padding: 3px 0px;
+    font-size: 13px;
+  }
+}
+
 
 /* Login Page */
 .login {
