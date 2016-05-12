@@ -24,11 +24,12 @@ class RecipeForm extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldRecipeFormUpdate [this.props]: ', this.props);
     const currentProps = _.pick(this.props, 'values');
     const incomingProps = _.pick(nextProps, 'values');
 
     // only update if the values property has changed or state has changed
+
+    console.log('shouldRecipeFormUpdate [true/false]: ', (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState)));
     return (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState));
   }
 
@@ -36,26 +37,82 @@ class RecipeForm extends React.Component {
     apiFetch(`/api/v1/action/`)
       .then(availableActions => {
         let selectedAction = (this.props.recipe) ? availableActions.find(action => (action.name === this.props.recipe.action_name)) : null;
-        let actionFormFields = null;
+        let actionFormFields = [];
         if (selectedAction) {
-          actionFormFields = Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-            return `arguments.${actionField}`
-          })
-        }
+          console.log('arguments_schema: ', selectedAction.arguments_schema)
+          Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
+            let typeOfField = selectedAction.arguments_schema.properties[actionField].type;
+            let objectRef = null;
+            let nestedActionProperties = null;
+
+            console.log("Processing actionField: ", actionField, typeOfField);
+
+            switch (typeOfField) {
+              case "string":
+                console.log("Processing string...");
+                actionFormFields.push(`${actionField}`);
+                break;
+              case "array":
+                console.log("Processing array...");
+
+                objectRef = selectedAction.arguments_schema.properties[actionField].items.$ref.split('/');
+                objectRef.shift();
+
+                nestedActionProperties = selectedAction.arguments_schema[objectRef[0]][objectRef[1]];
+
+                if (nestedActionProperties.allOf) {
+                  nestedActionProperties.allOf.forEach((schema, index) => {
+                    if (schema.properties) {
+                      Object.keys(schema.properties).map(key => {
+                        actionFormFields.push(`${actionField}[].${key}`);
+                      })
+                    } else if (schema.$ref) {
+                      let deeperObjectRef = schema.$ref.split('/');
+                      deeperObjectRef.shift();
+                      let deeperNestedProperties = selectedAction.arguments_schema[deeperObjectRef[0]][deeperObjectRef[1]];
+                      if (deeperNestedProperties.type === "object") {
+                        Object.keys(deeperNestedProperties.properties).map(key => {
+                          actionFormFields.push(`${actionField}[].${key}`)
+                        })
+                      }
+                    }
+                  })
+                }
+                break;
+
+              case undefined:
+                objectRef = selectedAction.arguments_schema.properties[actionField].$ref.split('/');
+                objectRef.shift(); // [definitions, survey]
+
+                // arguments_schema.definitions.survey
+                nestedActionProperties = selectedAction.arguments_schema[objectRef[0]][objectRef[1]];
+                // { type: "object", properties: {...} }
+                console.log('nestedActionProperties: ', nestedActionProperties);
+
+                if (nestedActionProperties.type === "object") {
+                  Object.keys(nestedActionProperties.properties).map(key => {
+                    actionFormFields.push(`${actionField}.${key}`)
+                  })
+                }
+                break;
+            } // end switch
+          }) // end Object.keys().map()
+        } // end if
 
         this.setState({
           availableActions,
           selectedAction,
           actionFormFields
         })
-      });
+
+    });
   }
 
   changeAction(event) {
     this.props.fields.action_name.onChange(event);
     let selectedAction = this.state.availableActions.find(action => (action.name === event.currentTarget.value));
     let actionFormFields = Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-      return `arguments.${actionField}`
+      return `${actionField}`
     });
 
     this.setState({
@@ -68,7 +125,7 @@ class RecipeForm extends React.Component {
     console.log('Submitting Form [this.props.combinedFormState]: ', this.props.combinedFormState);
     let recipeFormValues = getValues(this.props.combinedFormState.recipe);
     let actionFormValues = getValues(this.props.combinedFormState.action);
-    let combinedFormValues = { ...recipeFormValues, ...actionFormValues };
+    let combinedFormValues = { ...recipeFormValues, arguments: actionFormValues };
     console.log("Submitting Form [combinedFormValues]: ", combinedFormValues);
     if (this.props.recipeId) {
       this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', { recipe: combinedFormValues, recipeId: this.props.recipeId }));

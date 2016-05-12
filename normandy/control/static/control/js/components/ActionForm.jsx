@@ -12,17 +12,19 @@ class ActionForm extends React.Component {
     console.log('ActionForm willReceiveProps [next selected action]: ', nextProps.selectedAction)
     if (this.props.selectedAction.name !== nextProps.selectedAction.name) {
       console.log("Selected action changed...");
-      this.props.resetForm();
+      // this.props.resetForm();
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     console.log('shouldActionFormUpdate [this.props]: ', this.props);
-    const currentProps = _.pick(this.props, 'values');
-    const incomingProps = _.pick(nextProps, 'values');
+    const currentProps = _.pick(this.props, 'values', 'fields', 'selectedAction');
+    const incomingProps = _.pick(nextProps, 'values', 'fields', 'selectedAction');
 
     // only update if the values property has changed or state has changed
-    return (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState));
+    console.log('shouldActionFormUpdate [true/false]: ', (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState)));
+    // return (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState));
+    return true;
   }
 
   render() {
@@ -42,17 +44,41 @@ class ActionForm extends React.Component {
           <p className="help">{selectedAction.arguments_schema.description || selectedAction.arguments_schema.title }</p>
           <div className="fluid-3">
             {
-              Object.keys(fields['arguments']).map(fieldName => {
+              Object.keys(fields).map(fieldName => {
                 console.log("ActionForm Mapping Fields [fieldName]: ", fieldName);
-                console.log("ActionForm Mapping Fields [fieldValue]: ", fields['arguments'][fieldName]);
+                console.log("ActionForm Mapping Fields [fieldValue]: ", fields[fieldName]);
                 if (actionFields[fieldName].type === "string") {
                   return (
                     <div key={fieldName} className="row">
                       <label>{fieldName}</label>
-                       <input type="text" field={fields['arguments'][fieldName]} {...fields['arguments'][fieldName]} />
+                       <input type="text" field={fields[fieldName]} {...fields[fieldName]} />
                     </div>
                   )
                 }
+
+                if (actionFields[fieldName].type === "array") {
+                  return (
+                    <div key={fieldName} className="row">
+                    <button type="button" onClick={() => {
+                      fields[fieldName].addField()    // pushes empty child field onto the end of the array
+                    }}><i/> Add {fieldName}</button>
+
+                    {!fields[fieldName].length && <div>No {fieldName}</div>}
+                    {fields[fieldName].length ?
+                    fields[fieldName].map((childField, index) => {
+                      console.log("Child Field: ", childField);
+                      return (<div key={index}>
+                      <p>#{index + 1}</p>
+                      <label>Title</label>
+                        <input type="text" field={childField.title} {...childField.title} />
+                      </div>
+                      )
+                    }) : '' }
+
+                    </div>
+                  )
+                }
+
               })
             }
           </div>
@@ -69,8 +95,7 @@ export default reduxForm({
     console.log("Composing ActionForm [initialValues]: ", (props.recipe ? props.recipe['arguments'] : null));
 
     return {
-      initialValues: (props.recipe ? { arguments: props.recipe['arguments'] } : null),
-      fields: props.fields
+      initialValues: (props.recipe ? props.recipe['arguments'] : null)
     }
   }
 )(ActionForm)
