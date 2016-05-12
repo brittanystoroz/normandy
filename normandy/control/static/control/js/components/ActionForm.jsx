@@ -1,62 +1,45 @@
 import React from 'react'
 import { reduxForm } from 'redux-form'
 import { _ } from 'underscore'
+import HeartbeatForm from './action_forms/HeartbeatForm.jsx'
+import ConsoleLogForm from './action_forms/ConsoleLogForm.jsx'
 
 class ActionForm extends React.Component {
   constructor(props) {
     super(props)
   }
 
-  componentWillReceiveProps(nextProps) {
-    console.log('ActionForm willReceiveProps [previously selected action]: ', this.props.selectedAction)
-    console.log('ActionForm willReceiveProps [next selected action]: ', nextProps.selectedAction)
-    if (this.props.selectedAction.name !== nextProps.selectedAction.name) {
-      console.log("Selected action changed...");
-      this.props.resetForm();
-    }
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldActionFormUpdate [this.props]: ', this.props);
-    const currentProps = _.pick(this.props, 'values');
-    const incomingProps = _.pick(nextProps, 'values');
+    const currentProps = _.pick(this.props, 'initialValues', 'values', 'fields', 'selectedAction');
+    const incomingProps = _.pick(nextProps, 'initialValues', 'values', 'fields', 'selectedAction');
 
-    // only update if the values property has changed or state has changed
     return (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState));
   }
 
   render() {
-    console.log('Rendering ActionForm [this.props]: ', this.props);
+    const { fields, arguments_schema, recipe, name } = this.props;
+    const  actionFields = arguments_schema.properties;
 
-    const { fields, selectedAction, recipe } = this.props;
-    const  actionFields = selectedAction.arguments_schema.properties;
+    let childForm = 'No action form available';
 
-    console.log('ActionForm Arguments Schema: ', selectedAction.arguments_schema);
-    console.log('ActionForm Fields: ', fields);
-    console.log('ActionForm ActionFields: ', actionFields);
+    switch(name) {
+      case 'show-heartbeat':
+        childForm = (<HeartbeatForm fields={fields} />);
+        break;
+      case 'console-log':
+        childForm = (<ConsoleLogForm fields={fields} />);
+        break;
+      default:
+        childForm = childForm;
+    }
 
     return (
       <div id="action-configuration">
-        <i className="fa fa-caret-up fa-lg">&nbsp;</i>
+        <i className="fa fa-caret-up fa-lg"></i>
         <div className="row">
-          <p className="help">{selectedAction.arguments_schema.description || selectedAction.arguments_schema.title }</p>
-          <div className="fluid-3">
-            {
-              Object.keys(fields['arguments']).map(fieldName => {
-                console.log("ActionForm Mapping Fields [fieldName]: ", fieldName);
-                console.log("ActionForm Mapping Fields [fieldValue]: ", fields['arguments'][fieldName]);
-                if (actionFields[fieldName].type === "string") {
-                  return (
-                    <div key={fieldName} className="row">
-                      <label>{fieldName}</label>
-                       <input type="text" field={fields['arguments'][fieldName]} {...fields['arguments'][fieldName]} />
-                    </div>
-                  )
-                }
-              })
-            }
-          </div>
+          <p className="help fluid-4">{arguments_schema.description || arguments_schema.title }</p>
         </div>
+          {childForm}
       </div>
     )
   }
@@ -65,12 +48,12 @@ class ActionForm extends React.Component {
 export default reduxForm({
     form: 'action',
   }, (state, props) => {
-    console.log("Composing ActionForm [props]: ", props);
-    console.log("Composing ActionForm [initialValues]: ", (props.recipe ? props.recipe['arguments'] : null));
+    let initialValues = {};
+    if (props.recipe && props.recipe.action_name === props.name) {
+      initialValues = props.recipe['arguments'];
+    }
 
     return {
-      initialValues: (props.recipe ? { arguments: props.recipe['arguments'] } : null),
-      fields: props.fields
+      initialValues
     }
-  }
-)(ActionForm)
+})(ActionForm)

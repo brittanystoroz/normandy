@@ -1,12 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { reduxForm, getValues } from 'redux-form'
+import { destroy, reduxForm, getValues } from 'redux-form'
+import { _ } from 'underscore'
+
 import apiFetch from '../utils/apiFetch.js';
+import { parseJsonSchema, generateFieldsFromSchema } from '../utils/formSchemaHelpers.js';
+
 import ControlActions from '../actions/ControlActions.js'
 import composeRecipeContainer from './RecipeContainer.jsx'
 import ActionForm from './ActionForm.jsx'
-import { _ } from 'underscore'
 
 
 class RecipeForm extends React.Component {
@@ -19,12 +22,10 @@ class RecipeForm extends React.Component {
     this.state = {
       availableActions: [],
       selectedAction: null,
-      actionFormFields: null
     };
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldRecipeFormUpdate [this.props]: ', this.props);
     const currentProps = _.pick(this.props, 'values');
     const incomingProps = _.pick(nextProps, 'values');
 
@@ -35,43 +36,48 @@ class RecipeForm extends React.Component {
   getAvailableActions(recipeId) {
     apiFetch(`/api/v1/action/`)
       .then(availableActions => {
-        let selectedAction = (this.props.recipe) ? availableActions.find(action => (action.name === this.props.recipe.action_name)) : null;
-        let actionFormFields = null;
-        if (selectedAction) {
-          actionFormFields = Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-            return `arguments.${actionField}`
+        let selectedActionName = (this.props.recipe ? this.props.recipe.action_name : null);
+
+        availableActions.map(action => {
+          parseJsonSchema(action.arguments_schema).then(schema => {
+            action.arguments_schema = schema;
+            action.fields = generateFieldsFromSchema(schema);
+
+            if (selectedActionName === action.name) {
+              this.setState({
+                selectedAction: action
+              });
+            }
+            return action;
           })
-        }
+        });
 
         this.setState({
-          availableActions,
-          selectedAction,
-          actionFormFields
-        })
-      });
+          availableActions
+        });
+    });
   }
 
   changeAction(event) {
-    this.props.fields.action_name.onChange(event);
-    let selectedAction = this.state.availableActions.find(action => (action.name === event.currentTarget.value));
-    let actionFormFields = Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-      return `arguments.${actionField}`
-    });
+    const { dispatch, fields } = this.props;
+    let selectedActionName = event.currentTarget.value;
 
+    dispatch(destroy('action'));
+    fields.action_name.onChange(event);
     this.setState({
-      selectedAction,
-      actionFormFields
-    })
+      selectedAction: this.state.availableActions.find(action => action.name === selectedActionName)
+    });
   }
 
   submitForm() {
-    console.log('Submitting Form [this.props.combinedFormState]: ', this.props.combinedFormState);
-    let recipeFormValues = getValues(this.props.combinedFormState.recipe);
-    let actionFormValues = getValues(this.props.combinedFormState.action);
-    let combinedFormValues = { ...recipeFormValues, ...actionFormValues };
-    console.log("Submitting Form [combinedFormValues]: ", combinedFormValues);
+    let recipeFormValues = getValues(this.props.formState.recipe);
+    let actionFormValues = getValues(this.props.formState.action);
+    let combinedFormValues = { ...recipeFormValues, arguments: actionFormValues };
     if (this.props.recipeId) {
-      this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', { recipe: combinedFormValues, recipeId: this.props.recipeId }));
+      this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', {
+        recipe: combinedFormValues,
+        recipeId: this.props.recipeId
+      }));
     } else {
       this.props.dispatch(ControlActions.makeApiRequest('addRecipe', combinedFormValues));
     }
@@ -82,9 +88,8 @@ class RecipeForm extends React.Component {
   }
 
   render() {
-    console.log('Rendering Recipe Form [this.state]: ', this.state);
-    console.log('Rendering Recipe Form [this.props.initialValues]: ', this.props.initialValues);
-    const { fields: { name, filter_expression, action_name }, recipe, recipeId, handleSubmit } = this.props;
+    const { fields: { name, filter_expression, enabled, action_name }, recipe, recipeId, handleSubmit } = this.props;
+    const { availableActions, selectedAction } = this.state;
     return (
       <form onSubmit={handleSubmit(this.submitForm)} className="crud-form">
         <div className="row">
@@ -105,14 +110,14 @@ class RecipeForm extends React.Component {
             <select {...action_name} onChange={this.changeAction}>
               <option>Select an action</option>
               {
-                this.state.availableActions.map(action => {
+                availableActions.map(action => {
                   return (<option key={action.name} value={action.name}>{action.name}</option>)
                 })
               }
             </select>
           </div>
-          { this.state.selectedAction ?
-            <ActionForm recipe={recipe} fields={this.state.actionFormFields} selectedAction={this.state.selectedAction} /> : null
+          { selectedAction ?
+            <ActionForm recipe={recipe} {...selectedAction} /> : null
           }
         </div>
         <div className="row form-action-buttons">
@@ -134,13 +139,12 @@ RecipeForm.propTypes = {
 export default composeRecipeContainer(reduxForm({
     form: 'recipe',
   }, (state, props) => {
-    console.log("Composing Recipe Form [state]: ", state);
-    let fields = ['name', 'filter_expression', 'action_name'];
+    let fields = ['name', 'filter_expression', 'enabled', 'action_name'];
+    let initialValues = (props.recipe ? _.pick(props.recipe, fields) : null);
 
     return {
       fields,
-      initialValues: (props.recipe ? _.pick(props.recipe, fields) : null),
-      combinedFormState: state.form
+      initialValues,
+      formState: state.form
     }
-}
-)(RecipeForm))
+})(RecipeForm))

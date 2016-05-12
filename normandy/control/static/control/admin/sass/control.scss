@@ -189,12 +189,16 @@
   position: relative;
 
   .field-wrapper {
-    .fluid-1 {
-      width: 12.5%;
-    }
-    .fluid-3 {
-      width: 37.5%;
-    }
+    // .fluid-1 {
+    //   width: 12.5%;
+    // }
+    // .fluid-3 {
+    //   width: 37.5%;
+    // }
+  }
+
+  .fluid-8 {
+    padding: 0.5em 0em;
   }
 
   i.fa-caret-up {
@@ -204,18 +208,83 @@
     left: 15px;
   }
 
+  .active {
+      background-color: rgba(255,255,255,0.5);
+      border-bottom: 1px solid $darkCream;
+    }
+
+  .array-field {
+    margin-top: 25px;
+
+    a.button {
+      float: right;
+      padding: 0px 15px;
+    }
+  }
+
+  .row.survey-form {
+    margin-top: -50px;
+    padding: 40px;
+    position: relative;
+    transition: all 0.2s;
+
+    span.return-to-defaults {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 11px;
+
+      &:hover {
+        cursor: pointer;
+        color: $cta;
+      }
+    }
+  }
+
   h4 {
-    font-weight: 400;
+    display: inline-block;
+    font-weight: 600;
+    line-height: 30px;
   }
 
   ul {
-    margin-top: 10px;
+    margin-top: 25px;
   }
 
   li {
     list-style-type: none;
-    padding: 3px 0px;
+    padding: 5px 1em;
     font-size: 13px;
+    line-height: 30px;
+    transition: all 0.2s;
+
+    span {
+      display: inline-block;
+      float: right;
+    }
+
+    &:hover {
+      cursor: pointer;
+      color: $cta;
+    }
+
+    &.active {
+      padding-right: 40px;
+      margin-right: -2em;
+    }
+
+    &:before {
+      content: "";
+      border-color: transparent $darkBrown;
+      border-style: solid;
+      border-width: 0.35em 0 0.35em 0.35em;
+      display: inline-block;
+      height: 0;
+      width: 0;
+      left: -1em;
+      top: 50%;
+      position: relative;
+    }
   }
 }
 
