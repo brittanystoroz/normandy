@@ -15,12 +15,24 @@ class RecipeForm extends React.Component {
     this.submitForm = this.submitForm.bind(this);
     this.getAvailableActions = this.getAvailableActions.bind(this);
     this.changeAction = this.changeAction.bind(this);
+    this.parseActionFormSchema = this.parseActionFormSchema.bind(this);
+    this.getInitialActionValues = this.getInitialActionValues.bind(this);
 
     this.state = {
       availableActions: [],
       selectedAction: null,
       actionFormFields: null
     };
+  }
+
+  getInitialActionValues() {
+    if (this.props.recipe && this.state.selectedAction && this.props.recipe.action_name == this.state.selectedAction.name) {
+      console.log('getting values...');
+      return this.props.recipe['arguments'];
+    } else {
+      console.log('returning nothing from getting values...');
+      return {};
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -33,15 +45,12 @@ class RecipeForm extends React.Component {
     return (!_.isEqual(currentProps, incomingProps) || !_.isEqual(this.state, nextState));
   }
 
-  getAvailableActions(recipeId) {
-    apiFetch(`/api/v1/action/`)
-      .then(availableActions => {
-        let selectedAction = (this.props.recipe) ? availableActions.find(action => (action.name === this.props.recipe.action_name)) : null;
-        let actionFormFields = [];
-        if (selectedAction) {
-          console.log('arguments_schema: ', selectedAction.arguments_schema)
-          Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-            let typeOfField = selectedAction.arguments_schema.properties[actionField].type;
+  parseActionFormSchema(actionSchema) {
+    let actionFormFields = [];
+    let argumentsSchemaProps = actionSchema.properties;
+
+    Object.keys(argumentsSchemaProps).map(actionField => {
+            let typeOfField = argumentsSchemaProps[actionField].type;
             let objectRef = null;
             let nestedActionProperties = null;
 
@@ -55,10 +64,10 @@ class RecipeForm extends React.Component {
               case "array":
                 console.log("Processing array...");
 
-                objectRef = selectedAction.arguments_schema.properties[actionField].items.$ref.split('/');
+                objectRef = argumentsSchemaProps[actionField].items.$ref.split('/');
                 objectRef.shift();
 
-                nestedActionProperties = selectedAction.arguments_schema[objectRef[0]][objectRef[1]];
+                nestedActionProperties = actionSchema[objectRef[0]][objectRef[1]];
 
                 if (nestedActionProperties.allOf) {
                   nestedActionProperties.allOf.forEach((schema, index) => {
@@ -69,7 +78,7 @@ class RecipeForm extends React.Component {
                     } else if (schema.$ref) {
                       let deeperObjectRef = schema.$ref.split('/');
                       deeperObjectRef.shift();
-                      let deeperNestedProperties = selectedAction.arguments_schema[deeperObjectRef[0]][deeperObjectRef[1]];
+                      let deeperNestedProperties = actionSchema[deeperObjectRef[0]][deeperObjectRef[1]];
                       if (deeperNestedProperties.type === "object") {
                         Object.keys(deeperNestedProperties.properties).map(key => {
                           actionFormFields.push(`${actionField}[].${key}`)
@@ -81,11 +90,11 @@ class RecipeForm extends React.Component {
                 break;
 
               case undefined:
-                objectRef = selectedAction.arguments_schema.properties[actionField].$ref.split('/');
+                objectRef = argumentsSchemaProps[actionField].$ref.split('/');
                 objectRef.shift(); // [definitions, survey]
 
                 // arguments_schema.definitions.survey
-                nestedActionProperties = selectedAction.arguments_schema[objectRef[0]][objectRef[1]];
+                nestedActionProperties = actionSchema[objectRef[0]][objectRef[1]];
                 // { type: "object", properties: {...} }
                 console.log('nestedActionProperties: ', nestedActionProperties);
 
@@ -96,7 +105,19 @@ class RecipeForm extends React.Component {
                 }
                 break;
             } // end switch
-          }) // end Object.keys().map()
+    });
+
+
+    return actionFormFields;
+  }
+
+  getAvailableActions(recipeId) {
+    apiFetch(`/api/v1/action/`)
+      .then(availableActions => {
+        let actionFormFields = [];
+        let selectedAction = (this.props.recipe) ? availableActions.find(action => (action.name === this.props.recipe.action_name)) : null;
+        if (selectedAction) {
+          actionFormFields = this.parseActionFormSchema(selectedAction.arguments_schema);
         } // end if
 
         this.setState({
@@ -109,15 +130,19 @@ class RecipeForm extends React.Component {
   }
 
   changeAction(event) {
+    console.log("REF: ", this);
     this.props.fields.action_name.onChange(event);
     let selectedAction = this.state.availableActions.find(action => (action.name === event.currentTarget.value));
-    let actionFormFields = Object.keys(selectedAction.arguments_schema.properties).map(actionField => {
-      return `${actionField}`
-    });
+    let actionFormFields = this.parseActionFormSchema(selectedAction.arguments_schema);
+    let recipeActionData = {};
+
+    if (this.props.recipe && this.props.recipe.action_name === selectedAction.name) {
+      recipeActionData = this.props.recipe['arguments'];
+    }
 
     this.setState({
       selectedAction,
-      actionFormFields
+      actionFormFields: actionFormFields
     })
   }
 
@@ -125,13 +150,14 @@ class RecipeForm extends React.Component {
     console.log('Submitting Form [this.props.combinedFormState]: ', this.props.combinedFormState);
     let recipeFormValues = getValues(this.props.combinedFormState.recipe);
     let actionFormValues = getValues(this.props.combinedFormState.action);
+    console.log('Submitting Form [actionFormValues]: ', actionFormValues);
     let combinedFormValues = { ...recipeFormValues, arguments: actionFormValues };
     console.log("Submitting Form [combinedFormValues]: ", combinedFormValues);
-    if (this.props.recipeId) {
-      this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', { recipe: combinedFormValues, recipeId: this.props.recipeId }));
-    } else {
-      this.props.dispatch(ControlActions.makeApiRequest('addRecipe', combinedFormValues));
-    }
+    // if (this.props.recipeId) {
+    //   this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', { recipe: combinedFormValues, recipeId: this.props.recipeId }));
+    // } else {
+    //   this.props.dispatch(ControlActions.makeApiRequest('addRecipe', combinedFormValues));
+    // }
   }
 
   componentDidMount() {
@@ -169,7 +195,7 @@ class RecipeForm extends React.Component {
             </select>
           </div>
           { this.state.selectedAction ?
-            <ActionForm recipe={recipe} fields={this.state.actionFormFields} selectedAction={this.state.selectedAction} /> : null
+            <ActionForm ref={(c) => this.destroyActionForm = c} recipe={recipe} initialValues={this.getInitialActionValues()} fields={this.state.actionFormFields} selectedAction={this.state.selectedAction} /> : null
           }
         </div>
         <div className="row form-action-buttons">
