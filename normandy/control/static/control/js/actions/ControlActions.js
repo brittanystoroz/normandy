@@ -1,5 +1,3 @@
-import apiFetch from '../utils/apiFetch.js';
-
 export const REQUEST_IN_PROGRESS = 'REQUEST_IN_PROGRESS';
 export const REQUEST_COMPLETE = 'REQUEST_COMPLETE';
 
@@ -20,55 +18,41 @@ const BASE_API_URL = '/api/v1/recipe/';
 const API_REQUEST_SETTINGS = {
   credentials: 'include',
   headers: {
-    'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf
+    'X-CSRFToken': document.getElementsByTagName('html')[0].dataset.csrf,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   }
 };
 
 const apiRequestMap = {
   fetchAllRecipes(settings, getState) {
-    if (shouldFetchRecipes(getState())) {
-      return {
-        url: BASE_API_URL,
-        settings: {
-          method: 'get'
-        },
-        actionOnSuccess: recipesReceived,
-        errorNotification: 'Error fetching recipes.'
-      };
-    } else {
-      return null;
-    }
-  },
-
-  fetchSingleRecipe(recipeInfo) {
     return {
-      url: `${BASE_API_URL}${recipeInfo.recipeId}/`,
+      url: BASE_API_URL,
       settings: {
-        method: 'get'
+        method: 'GET'
       },
-      actionOnSuccess: singleRecipeReceived,
-      errorNotification: 'Error fetching recipe.'
+      errorNotification: 'Error fetching recipes.'
     };
   },
 
-  fetchSingleRevision(recipeInfo) {
+  fetchSingleRecipe(recipeInfo) {
+    let fetchUrl = (recipeInfo.recipeId ? `${BASE_API_URL}${recipeInfo.recipeId}/` : `/api/v1/recipe_version/${recipeInfo.revisionId}/`)
     return {
-      url: `/api/v1/recipe_version/${recipeInfo.revisionId}/`,
+      url: fetchUrl,
       settings: {
-        method: 'get'
+        method: 'GET'
       },
-      actionOnSuccess: singleRevisionReceived
-    }
+      errorNotification: 'Error fetching recipe.'
+    };
   },
 
   addRecipe(recipeInfo) {
     return {
       url: BASE_API_URL,
       settings: {
-        data: recipeInfo,
-        method: 'post'
+        body: JSON.stringify(recipeInfo.recipe),
+        method: 'POST'
       },
-      actionOnSuccess: recipeAdded,
       successNotification: 'Recipe added.',
       errorNotification: 'Error adding recipe.'
     };
@@ -78,13 +62,11 @@ const apiRequestMap = {
     return {
       url: `${BASE_API_URL}${recipeInfo.recipeId}/`,
       settings: {
-        data: recipeInfo.recipe,
-        method: 'patch'
+        body: JSON.stringify(recipeInfo.recipe),
+        method: 'PATCH'
       },
-      actionOnSuccess: recipeUpdated,
       successNotification: 'Recipe updated.',
       errorNotification: 'Error updating recipe.'
-
     };
   },
 
@@ -92,10 +74,8 @@ const apiRequestMap = {
     return {
       url: `${BASE_API_URL}${recipeInfo.recipeId}/`,
       settings: {
-        method: 'delete'
-      },
-      actionOnSuccess: recipeDeleted,
-      successActionParams: recipeInfo.recipeId
+        method: 'DELETE'
+      }
     };
   }
 };
@@ -117,55 +97,39 @@ function requestComplete(result) {
   }
 }
 
-function recipesReceived(recipes) {
+export function recipesReceived(recipes) {
   return {
     type: RECIPES_RECEIVED,
     recipes
   };
 }
 
-function singleRecipeReceived(recipe) {
+export function singleRecipeReceived(recipe) {
   return {
     type: SINGLE_RECIPE_RECEIVED,
     recipe
   };
 }
 
-function singleRevisionReceived(revision) {
-  return {
-    type: SINGLE_RECIPE_RECEIVED,
-    recipe: revision.recipe
-  };
-}
-
-function recipeAdded(recipe) {
+export function recipeAdded(recipe) {
   return {
     type: RECIPE_ADDED,
     recipe
   };
 }
 
-function recipeUpdated(recipe) {
+export function recipeUpdated(recipe) {
   return {
     type: RECIPE_UPDATED,
     recipe
   };
 }
 
-function recipeDeleted(recipeId) {
+export function recipeDeleted(recipeId) {
   return {
     type: RECIPE_DELETED,
     recipeId
   };
-}
-
-function shouldFetchRecipes(state) {
-  if (state.controlApp.recipeListNeedsFetch === true &&
-      state.controlApp.isFetching === false) {
-    return true;
-  } else {
-    return false;
-  }
 }
 
 export function setSelectedRecipe(recipeId) {
@@ -185,26 +149,32 @@ export function setNotification(notification) {
 export function makeApiRequest(requestType, settings) {
   return (dispatch, getState) => {
     let apiRequestConfig = apiRequestMap[requestType](settings, getState);
-    if (apiRequestConfig) {
-      dispatch(requestInProgress());
-      return apiFetch(apiRequestConfig.url, {
-        ...API_REQUEST_SETTINGS,
-        ...apiRequestConfig.settings
-      })
-      .then(response => {
-        dispatch(requestComplete({ status: 'success', notification: apiRequestConfig.successNotification }));
-        dispatch(apiRequestConfig.actionOnSuccess(apiRequestConfig.successActionParams || response));
-      })
-      .catch(error => {
+    dispatch(requestInProgress());
+
+    return fetch(apiRequestConfig.url, {
+      ...API_REQUEST_SETTINGS,
+      ...apiRequestConfig.settings
+    })
+    .then(response => {
+      if (response.status >= 400) {
         dispatch(requestComplete({ status: 'error', notification: apiRequestConfig.errorNotification }));
-      });
-    }
+        return response.json().then(err => { throw err; });
+      } else {
+        dispatch(requestComplete({ status: 'success', notification: apiRequestConfig.successNotification }));
+        return (response.status == 204) ? response.text : response.json();
+      }
+    });
   };
 }
 
 
 export default {
-  setSelectedRecipe,
-  setNotification,
   makeApiRequest,
+  recipesReceived,
+  singleRecipeReceived,
+  recipeAdded,
+  recipeUpdated,
+  recipeDeleted,
+  setSelectedRecipe,
+  setNotification
 };

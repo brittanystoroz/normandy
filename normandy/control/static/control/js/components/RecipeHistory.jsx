@@ -2,7 +2,6 @@ import React from 'react'
 import { push } from 'react-router-redux'
 import moment from 'moment'
 import composeRecipeContainer from './RecipeContainer.jsx'
-import apiFetch from '../utils/apiFetch.js';
 
 class RecipeHistory extends React.Component {
   constructor(props) {
@@ -14,12 +13,13 @@ class RecipeHistory extends React.Component {
   }
 
   getHistory(recipeId) {
-    apiFetch(`/api/v1/recipe/${recipeId}/history/`)
-      .then(response => {
-        this.setState({
-          revisionLog: response.reverse()
-        })
-      });
+    fetch(`/api/v1/recipe/${recipeId}/history/`)
+    .then(response => response.json())
+    .then(history => {
+      this.setState({
+        revisionLog: history.reverse()
+      })
+    });
   }
 
   componentDidMount() {

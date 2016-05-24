@@ -4,10 +4,8 @@ import { Link } from 'react-router'
 import { destroy, reduxForm, getValues } from 'redux-form'
 import { _ } from 'underscore'
 
-import apiFetch from '../utils/apiFetch.js';
 import { parseJsonSchema, generateFieldsFromSchema } from '../utils/formSchemaHelpers.js';
-
-import ControlActions from '../actions/ControlActions.js'
+import { makeApiRequest, updateRecipe, recipeUpdated, addRecipe, recipeAdded } from '../actions/ControlActions.js'
 import composeRecipeContainer from './RecipeContainer.jsx'
 import ActionForm from './ActionForm.jsx'
 
@@ -25,7 +23,8 @@ class RecipeForm extends React.Component {
   }
 
   getAvailableActions(recipeId) {
-    apiFetch('/api/v1/action/')
+    fetch('/api/v1/action/')
+    .then(response => response.json())
     .then(availableActions => {
       let selectedActionName = (this.props.recipe ? this.props.recipe.action_name : null);
 
@@ -62,17 +61,31 @@ class RecipeForm extends React.Component {
   }
 
   submitForm() {
-    let recipeFormValues = getValues(this.props.formState.recipe);
-    let actionFormValues = getValues(this.props.formState.action);
+    const { dispatch, formState, recipeId, fields } = this.props;
+    let recipeFormValues = getValues(formState.recipe);
+    let actionFormValues = getValues(formState.action);
     let combinedFormValues = { ...recipeFormValues, arguments: actionFormValues };
-    if (this.props.recipeId) {
-      this.props.dispatch(ControlActions.makeApiRequest('updateRecipe', {
-        recipe: combinedFormValues,
-        recipeId: this.props.recipeId
-      }));
-    } else {
-      this.props.dispatch(ControlActions.makeApiRequest('addRecipe', combinedFormValues));
+
+    let action = recipeId ? 'updateRecipe' : 'addRecipe';
+    let sideEffect = recipeId ? 'recipeUpdated' : 'recipeAdded';
+    let requestBody = {
+      recipe: combinedFormValues,
+      recipeId
     }
+
+    return new Promise((resolve, reject) => {
+      dispatch(makeApiRequest(action, requestBody)).then(response => {
+        dispatch(sideEffect(response));
+        resolve();
+      }).catch(response => {
+        let formFieldErrors = { _error: 'Submit failed' };
+        Object.keys(response).forEach(fieldName => {
+          formFieldErrors[fieldName] = response[fieldName].join(', ');
+        });
+        reject(formFieldErrors);
+      });
+    });
+
   }
 
   componentDidMount() {
@@ -91,19 +104,19 @@ class RecipeForm extends React.Component {
         }
         <div className="row">
           <div className="fluid-3">
-            <label>Name</label>
+            <label>Name <span className="validation-errors">{name.error}</span></label>
             <input type="text" field={name} {...name} />
           </div>
         </div>
         <div className="row">
           <div className="fluid-3">
-            <label>Filter Expression</label>
+            <label>Filter Expression <span className="validation-errors">{filter_expression.error}</span></label>
             <textarea field={filter_expression} {...filter_expression} />
           </div>
         </div>
         <div className="row">
           <div className="fluid-3">
-            <label>Action</label>
+            <label>Action <span className="validation-errors">{action_name.error}</span></label>
             <select {...action_name} onChange={this.changeAction}>
               <option>Select an action</option>
               {
