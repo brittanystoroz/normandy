@@ -1,7 +1,7 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import * as actions from '../../static/control/js/actions/ControlActions'
-import { fixtureRecipes, initialState } from '../fixtures/fixtures';
+import { fixtureRecipes, initialState, fixtureRevisions } from '../fixtures/fixtures';
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
