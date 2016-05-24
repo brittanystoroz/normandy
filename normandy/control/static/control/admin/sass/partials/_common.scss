@@ -178,17 +178,40 @@ i {
 
 
 /* Notifications */
-.notification {
-  border: 1px solid;
-  border-radius: 3px;
-  font-size: 12px;
-  line-height: 30px;
-  margin: 5px 0px;
-  padding: 5px 15px;
+#notification-bar {
+  background-color: #fff;
+  left: 0px;
+  position: fixed;
+  text-indent: 55px;
+  top: 0px;
+  width: 100%;
+  z-index: 1;
 }
 
-.info {
-  background-color: $yellow;
+p.notification {
+  animation: notification-message 0.3s 1;
+  animation-fill-mode: forwards;
   border-color: rgba(0,0,0,0.15);
   color: rgba(0,0,0,0.5);
+  line-height: 22px;
+  padding: 10px 15px;
+
+  &.success { background-color: rgba($green, 0.75);  }
+  &.error { background-color: rgba($red, 0.75); }
+  &.info { background-color: rgba($yellow, 0.75); }
+
+  i {
+    float: right;
+    margin: 0 55px 0 0;
+    padding: 5px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+@keyframes notification-message {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

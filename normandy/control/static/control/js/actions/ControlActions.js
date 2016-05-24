@@ -8,6 +8,8 @@ export const SINGLE_RECIPE_RECEIVED = 'SINGLE_RECIPE_RECEIVED';
 
 export const SET_SELECTED_RECIPE = 'SET_SELECTED_RECIPE';
 
+export const SET_NOTIFICATION = 'SET_NOTIFICATION';
+
 export const RECIPE_ADDED = 'RECIPE_ADDED';
 export const RECIPE_UPDATED = 'RECIPE_UPDATED';
 export const RECIPE_DELETED = 'RECIPE_DELETED';
@@ -30,7 +32,8 @@ const apiRequestMap = {
         settings: {
           method: 'get'
         },
-        actionOnSuccess: recipesReceived
+        actionOnSuccess: recipesReceived,
+        errorNotification: 'Error fetching recipes.'
       };
     } else {
       return null;
@@ -43,7 +46,8 @@ const apiRequestMap = {
       settings: {
         method: 'get'
       },
-      actionOnSuccess: singleRecipeReceived
+      actionOnSuccess: singleRecipeReceived,
+      errorNotification: 'Error fetching recipe.'
     };
   },
 
@@ -64,7 +68,9 @@ const apiRequestMap = {
         data: recipeInfo,
         method: 'post'
       },
-      actionOnSuccess: recipeAdded
+      actionOnSuccess: recipeAdded,
+      successNotification: 'Recipe added.',
+      errorNotification: 'Error adding recipe.'
     };
   },
 
@@ -75,7 +81,10 @@ const apiRequestMap = {
         data: recipeInfo.recipe,
         method: 'patch'
       },
-      actionOnSuccess: recipeUpdated
+      actionOnSuccess: recipeUpdated,
+      successNotification: 'Recipe updated.',
+      errorNotification: 'Error updating recipe.'
+
     };
   },
 
@@ -98,11 +107,14 @@ function requestInProgress() {
   };
 }
 
-function requestComplete(status) {
-  return {
-    type: REQUEST_COMPLETE,
-    status: status
-  };
+function requestComplete(result) {
+  return (dispatch) => {
+    if (result.notification) {
+      dispatch(setNotification({ messageType: result.status, message: result.notification }));
+    }
+
+    dispatch({ type: REQUEST_COMPLETE, status: result.status });
+  }
 }
 
 function recipesReceived(recipes) {
@@ -163,6 +175,13 @@ export function setSelectedRecipe(recipeId) {
   };
 }
 
+export function setNotification(notification) {
+  return {
+    type: SET_NOTIFICATION,
+    notification
+  };
+}
+
 export function makeApiRequest(requestType, settings) {
   return (dispatch, getState) => {
     let apiRequestConfig = apiRequestMap[requestType](settings, getState);
@@ -173,11 +192,11 @@ export function makeApiRequest(requestType, settings) {
         ...apiRequestConfig.settings
       })
       .then(response => {
-        dispatch(requestComplete('success'));
+        dispatch(requestComplete({ status: 'success', notification: apiRequestConfig.successNotification }));
         dispatch(apiRequestConfig.actionOnSuccess(apiRequestConfig.successActionParams || response));
       })
-      .catch(() => {
-        dispatch(requestComplete('failure'));
+      .catch(error => {
+        dispatch(requestComplete({ status: 'error', notification: apiRequestConfig.errorNotification }));
       });
     }
   };
@@ -186,5 +205,6 @@ export function makeApiRequest(requestType, settings) {
 
 export default {
   setSelectedRecipe,
+  setNotification,
   makeApiRequest,
 };

@@ -1,43 +1,10 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import * as actions from '../../static/control/js/actions/ControlActions'
+import { fixtureRecipes, initialState } from '../fixtures/fixtures';
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
-
-const fixtureRecipes = [
-  { "id": 1, "name": "Lorem Ipsum", "enabled": true },
-  { "id": 2, "name": "Dolor set amet", "enabled": true },
-  { "id": 3, "name": "Consequitar adipscing", "enabled": false }
-];
-
-const fixtureRevisions = [
-  {
-    "id": 169,
-    "date_created": "2016-05-13T17:20:35.698735Z",
-    "recipe": {
-        "id": 36,
-        "name": "Consequestar",
-        "enabled": true,
-        "revision_id": 22,
-        "action_name": "console-log",
-        "arguments": {
-            "message": "hi there message here"
-        },
-        "filter_expression": "()",
-        "approver": null,
-        "is_approved": false
-    }
-  }
-]
-
-const initialState = {
-    recipes: null,
-    isFetching: false,
-    selectedRecipe: null,
-    recipeListNeedsFetch: true
-};
-
 const store = mockStore({ controlApp: initialState });
 
 const successPromise = (responseData) => {
@@ -56,6 +23,10 @@ const failurePromise = () => {
 
 
 describe('controlApp Actions', () => {
+
+  beforeEach(() => {
+    store.clearActions();
+  });
 
   it('creates REQUEST_IN_PROGRESS when initiating an api call', () => {
     const expectedAction = { type: actions.REQUEST_IN_PROGRESS };
@@ -76,8 +47,17 @@ describe('controlApp Actions', () => {
       });
     })
 
-    it('returns with `status: failure` if the request failed', () => {
-      const expectedAction = { type: actions.REQUEST_COMPLETE, status: 'failure' };
+    it('returns with `status: error` if the request failed', () => {
+      const expectedAction = { type: actions.REQUEST_COMPLETE, status: 'error' };
+      spyOn(window, 'fetch').and.returnValue(failurePromise());
+
+      return store.dispatch(actions.makeApiRequest('fetchAllRecipes')).then(() => {
+        expect(store.getActions()).toContain(expectedAction);
+      });
+    });
+
+    it('creates a SET_NOTIFICATION action if provided', () => {
+      const expectedAction = { type: actions.SET_NOTIFICATION, notification: { messageType: 'error', 'message': 'Error fetching recipes.'} };
       spyOn(window, 'fetch').and.returnValue(failurePromise());
 
       return store.dispatch(actions.makeApiRequest('fetchAllRecipes')).then(() => {
