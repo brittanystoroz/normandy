@@ -116,9 +116,12 @@
 
   input[type="checkbox"] { opacity: 0; }
   input[type="number"] { width: 20%; }
+  textarea { height: 115px; }
 
   .fluid-1 { width: 6.25%; }
   .fluid-3 { width: 46.875%; }
+
+  .fluid-3 .row { margin: 1em 0; }
 
   .help {
     font-size: 11px;
@@ -320,4 +323,69 @@ li {
       margin: 0 0 10px 20px;
       text-transform: none;
     }
+}
+
+#status-details {
+  border: 1px solid #ECE7DB;
+  border-radius: 3px;
+  height: 270px;
+  margin: 50px 1em 0 1em;
+  padding: 20px 40px;
+
+  > div {
+    margin: 20px 0px;
+  }
+
+  .toggle-recipe-status {
+    transition: all 0.2s;
+  }
+
+  div.recipe-enabled {
+    .red { color: #999; }
+    .toggle-recipe-status.disabled {
+      font-weight: 400;
+      opacity: 0.5;
+      &:hover {
+        cursor: pointer;
+        opacity: 0.75;
+      }
+    }
+  }
+
+  div.recipe-disabled {
+    .green { color: #999; }
+    .toggle-recipe-status.enabled {
+      font-weight: 400;
+      opacity: 0.5;
+      &:hover {
+        cursor: pointer;
+        opacity: 0.75;
+      }
+    }
+  }
+
+  .separator {
+    background-color: #999;
+    display: inline-block;
+    margin: 0 15px;
+    width: 1px;
+  }
+
+  p.approval-meta {
+    font-size: 12px;
+    margin: 3px 0 0 0;
+  }
+
+  p.status-with-icon {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 5px 0px;
+  }
+
+  a.button {
+    display: inline-block;
+    font-size: 12px;
+    margin: 15px 0 0 0;
+    padding: 5px 25px;
+  }
 }

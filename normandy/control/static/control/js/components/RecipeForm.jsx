@@ -23,6 +23,10 @@ class RecipeForm extends React.Component {
   render() {
     const { fields: { name, filter_expression }, recipeId, handleSubmit, viewingRevision } = this.props;
 
+    let approved = false;
+    let approval_request_active = true;
+    let recipeEnabled = true;
+
     return (
       <form onSubmit={handleSubmit(this.submitForm)} className="crud-form">
         { viewingRevision ?
@@ -32,8 +36,20 @@ class RecipeForm extends React.Component {
         }
         <div className="row">
           <div className="fluid-3">
-            <label>Name</label>
-            <input type="text" field={name} {...name} />
+            <div className="row">
+              <label>Name</label>
+              <input type="text" field={name} {...name} />
+            </div>
+            <div className="row">
+              <label>Filter Expression</label>
+              <textarea field={filter_expression} {...filter_expression} />
+            </div>
+            <div className="row">
+              <label>Action</label>
+              <select>
+                <option>Select an action</option>
+              </select>
+            </div>
           </div>
         </div>
         <div className="row">
