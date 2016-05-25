@@ -203,6 +203,98 @@ li {
   }
 }
 
+.approval-status {
+  float: right;
+
+  .status {
+    border: 1px solid;
+    border-radius: 3px;
+    color: rgba(0,0,0,0.4);
+    font-weight: 600;
+    padding: 10px 15px;
+    text-align: center;
+
+    &.pending { background-color: rgba($yellow, 0.95); }
+    &.approved { background-color: rgba($green, 0.65); }
+  }
+}
+
+.approval-request-conversation {
+  background-color: #F6F4EF;
+  padding: 40px;
+  margin: 20px 0px;
+  position: relative;
+
+  i.fa-caret-up {
+    color: $cream;
+    right: 70px;
+    position: absolute;
+    top: -10px;
+  }
+
+  .approval-meta {
+    p {
+      font-size: 12px;
+      margin: 8px;
+    }
+
+    a.button, button {
+      display: block;
+      margin: 15px 0px;
+      width: 100%;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      color: #eee;
+
+      &:hover {
+        background-color: #ccc;
+        cursor: pointer;
+      }
+    }
+  }
+
+  ul.comment-thread li {
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 3px;
+    margin: 0 0 20px 0;
+    padding: 5px 12px;
+
+    p {
+      margin: 20px;
+
+      &.comment-meta {
+        margin: 0px;
+        text-transform: none;
+      }
+    }
+  }
+
+  .comment-buttons {
+    textarea {
+      border: 1px solid rgba(0,0,0,0.15);
+      font: normal normal 400 13px/16px "OpenSans", Verdana, Arial, sans-serif;
+      padding: 20px 30px;
+    }
+
+    button.button {
+      float: right;
+      margin: 20px 0 0 20px;
+
+      &.green {
+        background-color: $green;
+
+        &:hover {
+          background-color: $greenHover;
+        }
+      }
+    }
+  }
+}
+
+
 
 /* Login Page */
 .login {
