@@ -3,8 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { destroy, reduxForm, getValues } from 'redux-form'
 
-import apiFetch from '../utils/apiFetch.js';
-import ControlActions from '../actions/ControlActions.js'
+import { makeApiRequest, recipeUpdated, recipeAdded } from '../actions/ControlActions.js'
 import composeRecipeContainer from './RecipeContainer.jsx'
 import ActionForm from './ActionForm.jsx'
 import FormField from './form_fields/FormFieldWrapper.jsx';
@@ -32,17 +31,22 @@ export class RecipeForm extends React.Component {
 
   submitForm() {
     const { dispatch, formState, recipeId } = this.props;
+
+    let submitAction, submitOnSuccess;
     let recipeFormValues = getValues(formState.recipe);
     let actionFormValues = getValues(formState.action);
     let combinedFormValues = { ...recipeFormValues, arguments: actionFormValues };
+    let requestBody = { recipe: combinedFormValues, recipeId };
+
     if (recipeId) {
-      dispatch(ControlActions.makeApiRequest('updateRecipe', {
-        recipe: combinedFormValues,
-        recipeId: recipeId
-      }));
+      submitAction = 'updateRecipe';
+      submitOnSuccess = (response) => dispatch(recipeUpdated(response));
     } else {
-      dispatch(ControlActions.makeApiRequest('addRecipe', combinedFormValues));
+      submitAction = 'addRecipe';
+      submitOnSuccess = (response) => dispatch(recipeAdded(response));
     }
+
+    return dispatch(makeApiRequest(submitAction, requestBody)).then(response => submitOnSuccess(response));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -55,14 +59,15 @@ export class RecipeForm extends React.Component {
   }
 
   render() {
-    const { fields: { name, filter_expression, enabled, action_name }, recipe, recipeId, handleSubmit, viewingRevision } = this.props;
+    const { fields: { name, filter_expression, enabled, action_name },
+      recipe, recipeId, handleSubmit, viewingRevision } = this.props;
     const { availableActions, selectedAction } = this.state;
 
     return (
       <form onSubmit={handleSubmit(::this.submitForm)} className="crud-form">
 
         { viewingRevision &&
-          <p id="viewing-revision" className="notification info">
+          <p className="notification info">
             You are viewing a past version of this recipe. Saving this form will rollback the recipe to this revision.
           </p>
         }
@@ -89,6 +94,7 @@ export class RecipeForm extends React.Component {
     )
   }
 }
+
 RecipeForm.propTypes = {
   fields: React.PropTypes.object.isRequired,
 }

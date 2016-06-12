@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import ControlActions from '../actions/ControlActions.js'
+import { makeApiRequest, recipesReceived, setSelectedRecipe } from '../actions/ControlActions.js'
 
 class RecipeDataRow extends React.Component {
   render() {
@@ -9,7 +9,7 @@ class RecipeDataRow extends React.Component {
 
     return (
       <tr key={recipe.id} onClick={(e) => {
-        dispatch(ControlActions.setSelectedRecipe(recipe.id));
+        dispatch(setSelectedRecipe(recipe.id));
         dispatch(push(`/control/recipe/${recipe.id}/`))
       }}>
         <td>{recipe.name}</td>
@@ -36,9 +36,13 @@ class RecipeList extends React.Component {
   }
 
   componentWillMount() {
-    const { dispatch } = this.props
-    dispatch(ControlActions.makeApiRequest('fetchAllRecipes', {}));
-    dispatch(ControlActions.setSelectedRecipe(null));
+    const { dispatch, isFetching, recipeListNeedsFetch } = this.props;
+    dispatch(setSelectedRecipe(null));
+
+    if (recipeListNeedsFetch && !isFetching) {
+      dispatch(makeApiRequest('fetchAllRecipes', {}))
+      .then(recipes => dispatch(recipesReceived(recipes)));
+    }
   }
 
   render() {
@@ -70,7 +74,9 @@ class RecipeList extends React.Component {
 let mapStateToProps = (state, ownProps) => {
   return {
     recipes: state.controlApp.recipes || [],
-    dispatch: ownProps.dispatch
+    dispatch: ownProps.dispatch,
+    recipeListNeedsFetch: state.controlApp.recipeListNeedsFetch,
+    isFetching: state.controlApp.isFetching
   }
 }
 
