@@ -31,17 +31,12 @@ class Core(Configuration):
         'django.contrib.staticfiles',
     ]
 
+    # Middleware that ALL environments must have. See the Base class for
+    # details.
     MIDDLEWARE_CLASSES = [
         'normandy.base.middleware.RequestReceivedAtMiddleware',
         'django.middleware.security.SecurityMiddleware',
-        'normandy.base.middleware.ShortCircuitMiddleware',
-
-        'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
@@ -139,6 +134,24 @@ class Base(Core):
     # General settings
     DEBUG = values.BooleanValue(False)
     ADMINS = values.SingleNestedListValue([])
+    SILENCED_SYSTEM_CHECKS = values.ListValue([])
+
+    # Middleware that _most_ environments will need. Subclasses can
+    # override this list.
+    EXTRA_MIDDLEWARE_CLASSES = [
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+    ]
+
+    def MIDDLEWARE_CLASSES(self):
+        """
+        Determine middleware by combining the core set and
+        per-environment set.
+        """
+        return Core.MIDDLEWARE_CLASSES + self.EXTRA_MIDDLEWARE_CLASSES
 
     # Remote services
     DATABASES = values.DatabaseURLValue('postgres://postgres@localhost/normandy')
@@ -239,6 +252,16 @@ class Production(Base):
     SECURE_PROXY_SSL_HEADER = values.TupleValue(('HTTP_X_FORWARDED_PROTO', 'https'))
 
 
+class ProductionReadOnly(Production):
+    """
+    Settings for a production environment that is read-only. This is
+    used on public-facing webheads.
+    """
+    EXTRA_MIDDLEWARE_CLASSES = []  # No need for sessions!
+    ADMIN_ENABLED = values.BooleanValue(False)
+    SILENCED_SYSTEM_CHECKS = values.ListValue(['security.W003'])  # CSRF check
+
+
 class ProductionInsecure(Production):
     """
     Settings for a production-like environment that lacks many security features.
@@ -253,6 +276,10 @@ class ProductionInsecure(Production):
     CSRF_COOKIE_SECURE = values.BooleanValue(False)
     SECURE_HSTS_SECONDS = values.IntegerValue(0)
     SESSION_COOKIE_SECURE = values.BooleanValue(False)
+    SILENCED_SYSTEM_CHECKS = values.ListValue([
+        'security.W008',  # Secure SSL redirect
+        'security.W009',  # Secret key length
+    ])
 
 
 class Build(Production):

@@ -1,18 +1,21 @@
 import React, { PropTypes as pt } from 'react';
 import { Link } from 'react-router';
 import { push } from 'react-router-redux';
-import { destroy, reduxForm, getValues } from 'redux-form';
-import jexl from 'jexl';
+import { destroy, stopSubmit, reduxForm, getValues } from 'redux-form';
+import { _ } from 'underscore';
 
-import { makeApiRequest, recipeUpdated, recipeAdded } from '../actions/ControlActions.js';
+import { makeApiRequest, recipeUpdated, recipeAdded, showNotification }
+  from '../actions/ControlActions.js';
 import composeRecipeContainer from './RecipeContainer.js';
 import ActionForm from './ActionForm.js';
 import CheckboxField from './form_fields/CheckboxField.js';
 import FormField from './form_fields/FormFieldWrapper.js';
+import JexlEnvironment from '../../../../../selfrepair/static/js/JexlEnvironment.js';
 
 export class RecipeForm extends React.Component {
-  propTypes = {
+  static propTypes = {
     dispatch: pt.func.isRequired,
+    fields: pt.object.isRequired,
     formState: pt.object.isRequired,
     recipeId: pt.number.isRequired,
     submitting: pt.bool.isRequired,
@@ -52,7 +55,8 @@ export class RecipeForm extends React.Component {
 
   validateForm(formValues) {
     const jexlExpression = formValues.filter_expression;
-    return jexl.eval(jexlExpression, {});
+    const jexlEnv = new JexlEnvironment({});
+    return jexlEnv.eval(jexlExpression, {});
   }
 
   submitForm() {
@@ -65,6 +69,10 @@ export class RecipeForm extends React.Component {
 
     return this.validateForm(combinedFormValues)
     .catch(() => {
+      dispatch(showNotification({
+        messageType: 'error',
+        message: 'Recipe cannot be saved. Please correct any errors listed in the form below.',
+      }));
       throw {
         filter_expression: 'Invalid Expression',
       };
@@ -136,7 +144,6 @@ export class RecipeForm extends React.Component {
   }
 }
 RecipeForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
 };
 
 export default composeRecipeContainer(reduxForm({
@@ -147,10 +154,43 @@ export default composeRecipeContainer(reduxForm({
     ? props.location.state.selectedRevision
     : null;
 
+  const formatErrors = payload => {
+    let errors = payload;
+
+    /* If our payload is an object, process each error in the object
+       Otherwise, it is a string and will be returned immediately */
+    if (_.isObject(payload)) {
+      const invalidFields = Object.keys(payload);
+      if (invalidFields.length > 0) {
+        /* If our error keys are integers, it means they correspond
+           to an array field and we want to present errors as an array
+           e.g. { surveys: {0: {title: 'err'}}, {2: {weight: 'err'}} }
+           =>   { surveys: [{title: 'err'}, null, {weight: 'err'}] } */
+        errors = isNaN(invalidFields[0]) ? {} : [];
+
+        invalidFields.forEach(fieldName => {
+          errors[fieldName] = formatErrors(payload[fieldName]);
+        });
+      }
+    }
+
+    return errors;
+  };
+
+  const onSubmitFail = errors => {
+    const { dispatch } = props;
+    const actionFormErrors = errors.arguments;
+
+    if (actionFormErrors) {
+      dispatch(stopSubmit('action', formatErrors(actionFormErrors)));
+    }
+  };
+
   return {
     fields,
     initialValues: selectedRecipeRevision || props.recipe,
     viewingRevision: selectedRecipeRevision || props.location.query.revisionId,
     formState: state.form,
+    onSubmitFail,
   };
 })(RecipeForm));

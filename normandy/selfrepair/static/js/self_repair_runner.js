@@ -1,10 +1,6 @@
-import Normandy from './normandy_driver.js';
 import uuid from 'node-uuid';
-import jexl from 'jexl';
 
-
-jexl.addTransform('date', value => new Date(value));
-
+import JexlEnvironment from './JexlEnvironment.js';
 
 const registeredActions = {};
 window.registerAction = (name, ActionClass) => {
@@ -69,31 +65,25 @@ export function fetchRecipes() {
   const data = { enabled: 'True' };
 
   return fetch(recipeUrl, { headers, data })
-    .then(response => response.json())
-    .then(recipes => recipes);
+  .then(response => response.json());
 }
 
 
 /**
- * Fetch client information from the Normandy server and the driver.
+ * Fetch client information from the Normandy server.
  * @promise Resolves with an object containing client info.
  */
-function classifyClient() {
+export function classifyClient() {
   const { classifyUrl } = document.documentElement.dataset;
   const headers = { Accept: 'application/json' };
-  const classifyXhr = fetch(classifyUrl, { headers })
-    .then(response => response.json())
-    .then(client => client);
 
-  return Promise.all([classifyXhr, Normandy.client()])
-    .then(([classification, client]) => {
-        // Parse request time
-      classification.request_time = new Date(classification.request_time);
-
-      return Object.assign({
-        locale: Normandy.locale,
-      }, classification, client);
-    });
+  return fetch(classifyUrl, { headers })
+  .then(response => response.json())
+  .then(classification => {
+    // Parse request time
+    classification.request_time = new Date(classification.request_time);
+    return classification;
+  });
 }
 
 
@@ -103,13 +93,13 @@ function classifyClient() {
  * @param {Recipe} recipe - Recipe retrieved from the server.
  * @promise Resolves once the action has executed.
  */
-export function runRecipe(recipe, options = {}) {
+export function runRecipe(recipe, driver, options = {}) {
   return loadAction(recipe).then(Action => {
     if (options.testing !== undefined) {
-      Normandy.testing = options.testing;
+      driver.testing = options.testing;
     }
 
-    return new Action(Normandy, recipe).execute();
+    return new Action(driver, recipe).execute();
   });
 }
 
@@ -118,11 +108,18 @@ export function runRecipe(recipe, options = {}) {
  * Generate a context object for JEXL filter expressions.
  * @return {object}
  */
-export function filterContext() {
-  return classifyClient()
-  .then(classifiedClient => ({
-    normandy: classifiedClient,
-  }));
+export async function filterContext(driver) {
+  const classification = await classifyClient();
+  const client = await driver.client();
+
+  return {
+    normandy: {
+      locale: driver.locale,
+      userId: getUserId(),
+      ...client,
+      ...classification,
+    },
+  };
 }
 
 
@@ -134,9 +131,6 @@ export function filterContext() {
  *     signifying if the filter passed or failed.
  */
 export function doesRecipeMatch(recipe, context) {
-    // Remove newlines, which are invalid in JEXL
-  const filterExpression = recipe.filterExpression.replace(/\r?\n|\r/g, '');
-
-  return jexl.eval(filterExpression, context)
-    .then(value => [recipe, !!value]);
+  const jexlEnv = new JexlEnvironment({ recipe, ...context });
+  return jexlEnv.eval(recipe.filter_expression).then(value => [recipe, !!value]);
 }
